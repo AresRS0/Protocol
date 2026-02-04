@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PROTOCOL</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+
+    <div id="calculator-overlay" class="hidden">
+        <div class="calc-screen">0</div>
+        <div class="calc-buttons">
+            <button>C</button><button>%</button><button>/</button><button>*</button>
+            <button>7</button><button>8</button><button>9</button><button>-</button>
+            <button>4</button><button>5</button><button>6</button><button>+</button>
+            <button>1</button><button>2</button><button>3</button><button>=</button>
+            <button class="zero">0</button><button>.</button>
+            <button id="exit-calc" style="opacity: 0;">X</button>
+        </div>
+    </div>
+
+    <div id="app-container">
+        
+        <nav id="sidebar">
+            <div class="server-icon active" title="Ana Sayfa"><i class="fa-solid fa-shield-halved"></i></div>
+            <hr>
+            <div class="server-icon" title="Operasyon 1">#1</div>
+            <div class="server-icon" title="Haberleşme">#2</div>
+            <div class="server-icon add-server" title="Yeni Oda Kur">+</div>
+            
+            <div class="spacer"></div>
+            
+            <div class="server-icon settings-btn" title="Ayarlar"><i class="fa-solid fa-gear"></i></div>
+        </nav>
+
+        <aside id="chat-list-panel">
+            <div class="panel-header">
+                <h2>Mesajlar</h2>
+                <i class="fa-solid fa-pen-to-square"></i>
+            </div>
+            
+            <div class="news-ticker">
+                <span>SYSTEM: Protokol V1 aktif. Bağlantı güvenli.</span>
+            </div>
+
+            <div class="chat-items">
+                <div class="chat-item active">
+                    <div class="avatar"><i class="fa-solid fa-user-secret"></i></div>
+                    <div class="chat-info">
+                        <h4>#Operasyon1</h4>
+                        <p>Son mesaj: Konum doğrulandı...</p>
+                    </div>
+                    <span class="time">12:05</span>
+                </div>
+
+                <div class="chat-item">
+                    <div class="avatar" style="background-color: #d63031;">G</div>
+                    <div class="chat-info">
+                        <h4>Genel Sohbet</h4>
+                        <p>Ahmet: Dosyayı gönderdim.</p>
+                    </div>
+                    <span class="time">10:30</span>
+                </div>
+            </div>
+        </aside>
+
+        <main id="chat-area">
+            <header class="chat-header">
+                <div class="header-left">
+                    <i class="fa-solid fa-hashtag"></i>
+                    <div class="chat-details">
+                        <h3>Operasyon1</h3>
+                        <span>3 Çevrimiçi</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <i class="fa-solid fa-calculator" id="stealth-btn" title="Araçlar"></i>
+                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                </div>
+            </header>
+
+            <div class="messages-container">
+                <div class="message received">
+                    <p>Bölgeye intikal edildi mi?</p>
+                    <span class="msg-time">12:04</span>
+                </div>
+
+                <div class="message sent">
+                    <p>Evet, pozisyon alındı. Beklemedeyiz.</p>
+                    <span class="msg-time">12:05 <i class="fa-solid fa-check-double"></i></span>
+                </div>
+                
+                <div class="message sent flash-msg">
+                    <p><i class="fa-solid fa-fire"></i> Tek Gösterimlik Fotoğraf</p>
+                    <span class="msg-time">12:06</span>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <button class="attach-btn"><i class="fa-solid fa-plus"></i></button>
+                <input type="text" placeholder="Mesaj yazın... (Güvenli Hat)">
+                <button class="emoji-btn"><i class="fa-regular fa-face-smile"></i></button>
+                <button class="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
