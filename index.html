@@ -26,7 +26,7 @@
             <form id="login-form">
                 <div class="input-group">
                     <i class="fa-solid fa-envelope"></i>
-                    <input type="email" id="email" placeholder="E-Posta" required>
+                    <input type="email" id="email" placeholder="Gerçek E-Posta Adresi" required>
                 </div>
                 <div class="input-group">
                     <i class="fa-solid fa-lock"></i>
@@ -41,17 +41,55 @@
         </div>
     </section>
 
+    <section id="verify-email-screen" class="hidden">
+        <div class="login-box">
+            <i class="fa-solid fa-envelope-circle-check" style="font-size: 50px; color: var(--ios-orange);"></i>
+            <h2 style="margin: 20px 0;">E-Postanı Doğrula</h2>
+            <p style="color: #aaa; font-size: 14px; margin-bottom: 20px;">
+                Güvenlik protokolü gereği, sisteme girmek için mail adresine gönderdiğimiz linke tıklamalısın.
+            </p>
+            <p id="verify-status" style="color: var(--accent); margin-bottom: 15px;"></p>
+            <button id="check-verify-btn" style="background-color: var(--ios-gray);">Doğruladım, Giriş Yap</button>
+            <button id="resend-verify-btn" style="background-color: transparent; border: 1px solid #555; margin-top: 10px;">Link Gelmedi, Tekrar Gönder</button>
+            <p class="auth-footer" style="margin-top: 20px; cursor: pointer;" onclick="auth.signOut()">Farklı hesaba geç</p>
+        </div>
+    </section>
+
+    <section id="profile-setup-screen" class="hidden">
+        <div class="login-box">
+            <h2>Kimlik Oluştur</h2>
+            <p style="color: #aaa; font-size: 12px; margin-bottom: 20px;">Sisteme giriş için profil oluşturmalısın.</p>
+            
+            <div class="profile-upload" id="setup-avatar-btn">
+                <img id="setup-avatar-preview" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Avatar">
+                <div class="overlay"><i class="fa-solid fa-camera"></i></div>
+            </div>
+            
+            <div class="input-group" style="margin-top: 20px;">
+                <i class="fa-solid fa-user-tag"></i>
+                <input type="text" id="setup-username" placeholder="Kod Adı / Kullanıcı Adı" required>
+            </div>
+
+            <button id="save-profile-btn">PROFİLİ KAYDET VE GİR</button>
+        </div>
+    </section>
+
     <div id="app-container" class="hidden">
         
         <nav id="sidebar">
             <div class="server-icon active" title="Ana Sayfa"><i class="fa-solid fa-shield-halved"></i></div>
             <hr>
-            <div class="server-icon" title="Operasyon 1">#1</div>
-            <div class="server-icon" title="Haberleşme">#2</div>
+            <div id="room-list">
+                <div class="server-icon" data-room-id="Genel" title="Genel Merkez">#1</div>
+            </div>
+            
             <div class="server-icon add-server" title="Yeni Oda Kur">+</div>
             <div class="spacer"></div>
-            <div class="server-icon logout-btn" id="logout-btn" title="Güvenli Çıkış"><i class="fa-solid fa-power-off"></i></div>
-            <div class="server-icon settings-btn" title="Ayarlar"><i class="fa-solid fa-gear"></i></div>
+            
+            <div class="server-icon" id="my-profile-btn" title="Profilim">
+                <img id="nav-avatar" src="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+            </div>
+            <div class="server-icon settings-btn" id="open-settings-btn" title="Ayarlar"><i class="fa-solid fa-gear"></i></div>
         </nav>
 
         <aside id="chat-list-panel">
@@ -61,10 +99,10 @@
             </div>
             <div class="chat-items">
                 <div class="chat-item active">
-                    <div class="avatar"><i class="fa-solid fa-user-secret"></i></div>
+                    <div class="avatar" id="current-room-icon">#</div>
                     <div class="chat-info">
-                        <h4>#Operasyon1</h4>
-                        <p>Son mesaj: Dosya iletildi.</p>
+                        <h4 id="current-room-name">Yükleniyor...</h4>
+                        <p>Bağlantı güvenli.</p>
                     </div>
                 </div>
             </div>
@@ -75,7 +113,7 @@
                 <div class="header-left">
                     <i class="fa-solid fa-hashtag"></i>
                     <div class="chat-details">
-                        <h3>Operasyon1</h3>
+                        <h3 id="header-room-name">...</h3>
                         <span id="user-status">Çevrimiçi</span>
                     </div>
                 </div>
@@ -85,18 +123,44 @@
                 </div>
             </header>
 
-            <div class="messages-container" id="messages-feed">
-                </div>
+            <div class="messages-container" id="messages-feed"></div>
 
             <div class="input-area">
                 <input type="file" id="file-input" style="display: none;">
-                
                 <button class="attach-btn" id="attach-btn"><i class="fa-solid fa-plus"></i></button>
-                <input type="text" id="msg-input" placeholder="Mesaj yazın... (Güvenli Hat)">
-                <button class="emoji-btn"><i class="fa-regular fa-face-smile"></i></button>
+                <input type="text" id="msg-input" placeholder="Mesaj yazın...">
                 <button class="send-btn" id="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
         </main>
+    </div>
+
+    <div id="settings-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>AYARLAR</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="setting-section">
+                    <h3>Görünüm</h3>
+                    <p>Tema Rengi Seçin:</p>
+                    <div class="color-picker">
+                        <div class="color-dot" style="background: #00cec9;" data-color="#00cec9"></div>
+                        <div class="color-dot" style="background: #ff7675;" data-color="#ff7675"></div>
+                        <div class="color-dot" style="background: #74b9ff;" data-color="#74b9ff"></div>
+                        <div class="color-dot" style="background: #a29bfe;" data-color="#a29bfe"></div>
+                        <div class="color-dot" style="background: #55efc4;" data-color="#55efc4"></div>
+                        <div class="color-dot" style="background: #fdcb6e;" data-color="#fdcb6e"></div>
+                    </div>
+                </div>
+                <hr>
+                <div class="setting-section">
+                    <h3>Hesap</h3>
+                    <p id="settings-email">...</p>
+                    <button id="logout-btn-settings" class="danger-btn">Güvenli Çıkış Yap</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
