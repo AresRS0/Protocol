@@ -10,326 +10,364 @@ const screens = {
     app: document.getElementById('app-container')
 };
 
-// Login Elements
-const loginForm = document.getElementById('login-form');
-const googleBtn = document.getElementById('google-btn');
-const showRegisterBtn = document.getElementById('show-register');
-const loginBtn = document.getElementById('login-btn');
-const authErrorMsg = document.getElementById('auth-error-msg');
-
-// Verify Elements
-const checkVerifyBtn = document.getElementById('check-verify-btn');
-const resendVerifyBtn = document.getElementById('resend-verify-btn');
-const verifyStatus = document.getElementById('verify-status');
-
-// Profile & App Elements
-const setupAvatarBtn = document.getElementById('setup-avatar-btn');
-const setupUsername = document.getElementById('setup-username');
-const saveProfileBtn = document.getElementById('save-profile-btn');
-let tempAvatarUrl = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
-
-const messagesFeed = document.getElementById('messages-feed');
+// UI Elemanları
 const msgInput = document.getElementById('msg-input');
-const sendBtn = document.getElementById('send-btn');
+const messagesFeed = document.getElementById('messages-feed');
 const attachBtn = document.getElementById('attach-btn');
 const fileInput = document.getElementById('file-input');
+const sendBtn = document.getElementById('send-btn');
+const roomModal = document.getElementById('room-modal');
 const settingsModal = document.getElementById('settings-modal');
 
 // Durum Değişkenleri
-let currentUserData = null;
-let currentRoomID = 'Genel';
-let isRegister = false;
+let currentUser = null;
+let currentRoomId = null;
 
-// ---------------------------------------------
-// 1. GÜVENLİK VE GİRİŞ KONTROLÜ
-// ---------------------------------------------
+// ==========================================
+// 1. GİRİŞ & GÜVENLİK
+// ==========================================
 
 auth.onAuthStateChanged(async (user) => {
-    hideAllScreens();
+    // Tüm ekranları gizle
+    Object.values(screens).forEach(el => el.classList.add('hidden'));
 
     if (user) {
-        // GOOGLE KULLANICILARI OTOMATİK ONAYLIDIR
-        // E-posta ile girenler için sunucudan son durumu çek (RELOAD)
-        await user.reload(); 
-        
-        if (!user.emailVerified) {
-            // HATA: Doğrulanmamış!
-            screens.verify.classList.remove('hidden');
-            return;
+        // Mail onayı kontrolü (Google hariç)
+        const isGoogle = user.providerData.some(p => p.providerId === 'google.com');
+        if (!isGoogle && !user.emailVerified) {
+            await user.reload(); // Sunucuyu zorla
+            if (!user.emailVerified) {
+                screens.verify.classList.remove('hidden');
+                return;
+            }
         }
 
-        // Doğrulanmış -> Profil Var mı Bak
+        // Profil Kontrolü
         const userDoc = await db.collection('users').doc(user.uid).get();
-
         if (userDoc.exists) {
-            // Var -> Uygulamaya Gir
-            currentUserData = userDoc.data();
-            loadApp(currentUserData);
+            currentUser = userDoc.data();
+            initApp();
         } else {
-            // Yok -> Profil Oluştur
-            // Eğer Google ile girdiyse ismini ve resmini otomatik alabiliriz
-            if (user.displayName) setupUsername.value = user.displayName;
-            if (user.photoURL) {
-                tempAvatarUrl = user.photoURL;
-                document.getElementById('setup-avatar-preview').src = user.photoURL;
-            }
+            // Profil oluşturma ekranı
+            if (user.photoURL) document.getElementById('setup-avatar-preview').src = user.photoURL;
             screens.profile.classList.remove('hidden');
         }
-
     } else {
         screens.auth.classList.remove('hidden');
     }
 });
 
-function hideAllScreens() { Object.values(screens).forEach(el => el.classList.add('hidden')); }
-
-// ---------------------------------------------
-// 2. GİRİŞ YÖNTEMLERİ
-// ---------------------------------------------
-
-// A) E-POSTA GİRİŞ / KAYIT
-loginForm.addEventListener('submit', (e) => {
+// Giriş İşlemleri
+document.getElementById('login-form').addEventListener('submit', (e) => {
     e.preventDefault();
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
-    authErrorMsg.innerText = "İşlem yapılıyor...";
-
-    if (isRegister) {
-        auth.createUserWithEmailAndPassword(email, password)
-            .then((res) => {
-                res.user.sendEmailVerification();
-                authErrorMsg.innerText = "Doğrulama maili gönderildi!";
-            })
-            .catch(err => authErrorMsg.innerText = err.message);
-    } else {
-        auth.signInWithEmailAndPassword(email, password)
-            .catch(err => authErrorMsg.innerText = "Hatalı şifre veya kullanıcı yok.");
-    }
+    auth.signInWithEmailAndPassword(email, password).catch(err => alert(err.message));
 });
 
-// B) GOOGLE GİRİŞİ (YENİ)
-googleBtn.addEventListener('click', () => {
+document.getElementById('google-btn').addEventListener('click', () => {
     const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider)
-        .then((result) => {
-            console.log("Google Girişi Başarılı:", result.user.email);
-            // onAuthStateChanged otomatik yakalayacak
-        })
-        .catch((error) => {
-            console.error(error);
-            authErrorMsg.innerText = "Google hatası: " + error.message;
-        });
+    auth.signInWithPopup(provider).catch(err => alert(err.message));
 });
 
-// Kayıt Ol / Giriş Yap Geçişi
-showRegisterBtn.addEventListener('click', () => {
-    isRegister = !isRegister;
-    document.querySelector('.logo h1').innerText = isRegister ? "KAYIT OL" : "PROTOCOL";
-    loginBtn.innerText = isRegister ? "HESAP OLUŞTUR" : "GİRİŞ YAP";
-    showRegisterBtn.innerText = isRegister ? "Giriş Yap" : "Kayıt Ol";
-    authErrorMsg.innerText = "";
-});
-
-// ---------------------------------------------
-// 3. DOĞRULAMA KONTROLÜ (SIKI GÜVENLİK)
-// ---------------------------------------------
-
-checkVerifyBtn.addEventListener('click', async () => {
-    const user = auth.currentUser;
-    verifyStatus.innerText = "Sunucu sorgulanıyor...";
+document.getElementById('show-register').addEventListener('click', () => {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    if(!email || !password) return alert("Kayıt olmak için E-posta ve Şifre girin.");
     
-    // ZORLA YENİLEME (Server-side check)
-    await user.reload();
-
-    if (user.emailVerified) {
-        verifyStatus.innerText = "Onaylandı! Giriş yapılıyor...";
-        // Sayfayı yenile ki akış baştan başlasın
-        setTimeout(() => window.location.reload(), 1000);
-    } else {
-        verifyStatus.innerText = "HATA: Mail hala onaylanmamış. Lütfen Spam klasörüne bak.";
-    }
+    auth.createUserWithEmailAndPassword(email, password).then(res => {
+        res.user.sendEmailVerification();
+        alert("Doğrulama maili gönderildi. Lütfen onaylayın.");
+    }).catch(err => alert(err.message));
 });
 
-resendVerifyBtn.addEventListener('click', () => {
-    const user = auth.currentUser;
-    if(user) user.sendEmailVerification().then(() => alert("Mail tekrar gönderildi."));
-});
-
-// ---------------------------------------------
-// 4. PROFİL VE DOSYA YÜKLEME
-// ---------------------------------------------
-
-setupAvatarBtn.addEventListener('click', () => fileInput.click());
-
-fileInput.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (!screens.profile.classList.contains('hidden')) {
-        // Profil Fotosu Yükleme
-        uploadFile(file, (url) => {
-            tempAvatarUrl = url;
-            document.getElementById('setup-avatar-preview').src = url;
-        });
-    } else {
-        // Sohbet Dosyası
-        attachBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-        uploadFile(file, (url, type, name) => {
-            sendMessage(url, type, name);
-            attachBtn.innerHTML = '<i class="fa-solid fa-plus"></i>';
-        });
-    }
-    fileInput.value = '';
-});
-
-async function uploadFile(file, callback) {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', UPLOAD_PRESET);
-
-    try {
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`, { method: 'POST', body: formData });
-        const data = await res.json();
-        if (data.secure_url) callback(data.secure_url, data.resource_type, file.name);
-    } catch (err) { alert("Yükleme başarısız."); }
-}
-
-saveProfileBtn.addEventListener('click', async () => {
-    const username = setupUsername.value.trim();
+// Profil Kaydetme
+document.getElementById('save-profile-btn').addEventListener('click', async () => {
+    const username = document.getElementById('setup-username').value;
     if (!username) return alert("İsim şart.");
-    const user = auth.currentUser;
     
-    const newData = {
+    const user = auth.currentUser;
+    const avatar = document.getElementById('setup-avatar-preview').src;
+
+    const userData = {
         uid: user.uid,
         email: user.email,
         username: username,
-        avatar: tempAvatarUrl,
+        avatar: avatar,
         theme: '#00cec9',
-        currentRoom: 'Genel',
+        rooms: ['Genel'], // Varsayılan oda
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
 
-    await db.collection('users').doc(user.uid).set(newData);
-    currentUserData = newData;
-    loadApp(currentUserData);
+    await db.collection('users').doc(user.uid).set(userData);
+    currentUser = userData;
+    initApp();
 });
 
-// ---------------------------------------------
-// 5. UYGULAMA İÇİ MANTIK
-// ---------------------------------------------
+// ==========================================
+// 2. UYGULAMA BAŞLATMA & ODA YÖNETİMİ
+// ==========================================
 
-function loadApp(userData) {
-    screens.profile.classList.add('hidden');
+function initApp() {
     screens.app.classList.remove('hidden');
-    document.getElementById('nav-avatar').src = userData.avatar;
-    document.getElementById('settings-email').innerText = userData.email;
-    applyTheme(userData.theme);
-    changeRoom(userData.currentRoom || 'Genel');
+    
+    // Profili Yükle
+    document.getElementById('nav-avatar').src = currentUser.avatar;
+    document.getElementById('settings-email-display').innerText = currentUser.email;
+    applyTheme(currentUser.theme);
+
+    // Oda Listesini Getir (Şimdilik manuel ekliyoruz, ilerde 'subscribedRooms' kullanırız)
+    // Şimdilik sadece kullanıcıyı boş ekrana atıyoruz, oda seçmesini istiyoruz.
+    renderRoomList();
 }
 
-function applyTheme(color) {
-    document.documentElement.style.setProperty('--accent', color);
-    if (currentUserData && currentUserData.theme !== color) {
-        db.collection('users').doc(currentUserData.uid).update({ theme: color });
-        currentUserData.theme = color;
-    }
+function renderRoomList() {
+    // Burada kullanıcının katıldığı odaları listeleyebiliriz.
+    // Şimdilik basit tutuyoruz, 'Genel' odası varsayılan değil, seçilmesi gerek.
 }
 
-function changeRoom(roomId) {
-    currentRoomID = roomId;
-    document.getElementById('current-room-name').innerText = roomId;
+// Odaya Girme
+async function enterRoom(roomId) {
+    currentRoomId = roomId;
+    
+    // UI Güncelle
+    document.getElementById('empty-state-msg').classList.add('hidden');
+    document.getElementById('room-info-card').classList.remove('hidden');
+    document.getElementById('panel-room-name').innerText = "Oda: " + roomId;
+    document.getElementById('panel-room-id').innerText = roomId;
     document.getElementById('header-room-name').innerText = roomId;
+
+    // Mesajları Dinle
     loadMessages(roomId);
-    if(currentUserData) db.collection('users').doc(currentUserData.uid).update({ currentRoom: roomId });
 }
 
-function sendMessage(content, type, fileName) {
-    if (!auth.currentUser) return;
-    db.collection('messages').add({
-        content: content,
-        type: type || 'text',
-        fileName: fileName || null,
-        sender: currentUserData.username,
-        avatar: currentUserData.avatar,
-        uid: auth.currentUser.uid,
-        roomId: currentRoomID,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+// Modal Açma/Kapama
+document.getElementById('open-room-modal-btn').addEventListener('click', () => roomModal.classList.remove('hidden'));
+document.getElementById('settings-trigger').addEventListener('click', () => settingsModal.classList.remove('hidden'));
+
+document.querySelectorAll('.close-modal').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.getElementById(btn.dataset.target).classList.add('hidden');
     });
+});
+
+// Tab Geçişleri (Katıl / Oluştur)
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+        
+        btn.classList.add('active');
+        document.getElementById(`tab-${btn.dataset.tab}`).classList.remove('hidden');
+    });
+});
+
+// ODA OLUŞTURMA
+document.getElementById('create-room-btn').addEventListener('click', async () => {
+    const name = document.getElementById('create-room-name').value;
+    let code = document.getElementById('create-room-code').value;
+
+    if (!code) code = "#" + Math.random().toString(36).substr(2, 6).toUpperCase(); // Rastgele kod
+    if (!code.startsWith('#')) code = '#' + code;
+
+    // Odaya giriş yap
+    enterRoom(code);
+    roomModal.classList.add('hidden');
+    
+    // Sol menüye ikon ekle (Geçici)
+    addRoomIconToSidebar(code);
+});
+
+// ODAYA KATILMA
+document.getElementById('join-room-btn').addEventListener('click', () => {
+    const code = document.getElementById('join-room-code').value;
+    if (!code) return;
+    
+    enterRoom(code);
+    roomModal.classList.add('hidden');
+    addRoomIconToSidebar(code);
+});
+
+function addRoomIconToSidebar(code) {
+    const list = document.getElementById('my-rooms-list');
+    const div = document.createElement('div');
+    div.className = 'server-icon';
+    div.innerText = code.substring(1, 3).toUpperCase();
+    div.title = code;
+    div.onclick = () => enterRoom(code);
+    list.appendChild(div);
 }
 
-sendBtn.addEventListener('click', () => {
-    const text = msgInput.value.trim();
-    if(text) { sendMessage(text, 'text'); msgInput.value = ''; }
-});
-msgInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendBtn.click(); });
-attachBtn.addEventListener('click', () => { if(screens.app.classList.contains('hidden')) return; fileInput.click(); });
+// ==========================================
+// 3. MESAJLAŞMA & DOSYA YÜKLEME
+// ==========================================
 
-let unsubscribe = null;
 function loadMessages(roomId) {
-    if (unsubscribe) unsubscribe();
-    unsubscribe = db.collection('messages').where('roomId', '==', roomId).orderBy('timestamp', 'asc')
+    // Önceki dinleyiciyi temizle (varsa)
+    // db.collection('messages').onSnapshot...
+    
+    db.collection('messages')
+        .where('roomId', '==', roomId)
+        .orderBy('timestamp', 'asc')
         .onSnapshot(snapshot => {
             messagesFeed.innerHTML = '';
             snapshot.forEach(doc => {
                 const msg = doc.data();
                 const isMe = msg.uid === auth.currentUser.uid;
+                
                 const div = document.createElement('div');
-                div.classList.add('message', isMe ? 'sent' : 'received');
+                div.className = `message ${isMe ? 'sent' : 'received'}`;
                 
+                // İçerik Oluşturma
                 let contentHTML = '';
-                if(msg.type === 'text') contentHTML = `<p>${msg.content}</p>`;
-                else if(msg.type === 'image') contentHTML = `<img src="${msg.content}" style="max-width:100%; border-radius:10px;">`;
-                else contentHTML = `<a href="${msg.content}" target="_blank" style="color:white;"><i class="fa-solid fa-file"></i> ${msg.fileName || 'Dosya'}</a>`;
-                
-                div.innerHTML = `<div style="font-size:10px; color:#aaa; margin-bottom:2px;">${msg.sender}</div>${contentHTML}`;
+                if (msg.type === 'text') {
+                    contentHTML = `<p>${msg.content}</p>`;
+                } else if (msg.type === 'image') {
+                    contentHTML = `<img src="${msg.content}" style="max-width:100%; border-radius:8px;">`;
+                } else {
+                    contentHTML = `<a href="${msg.content}" target="_blank" style="color:white; text-decoration:underline;">
+                        <i class="fa-solid fa-file"></i> ${msg.fileName || 'Dosya'}
+                    </a>`;
+                }
+
+                div.innerHTML = `
+                    <div class="msg-info">${msg.sender}</div>
+                    ${contentHTML}
+                    <span class="msg-time">${new Date(msg.timestamp?.toDate()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                `;
                 messagesFeed.appendChild(div);
             });
             messagesFeed.scrollTop = messagesFeed.scrollHeight;
         });
 }
 
-// Ayarlar
-document.getElementById('open-settings-btn').addEventListener('click', () => settingsModal.classList.remove('hidden'));
-document.querySelector('.close-modal').addEventListener('click', () => settingsModal.classList.add('hidden'));
-document.querySelectorAll('.color-dot').forEach(dot => dot.addEventListener('click', (e) => applyTheme(e.target.dataset.color)));
-document.getElementById('logout-btn-settings').addEventListener('click', () => { auth.signOut(); window.location.reload(); });
+// Mesaj Gönderme
+sendBtn.addEventListener('click', () => {
+    const text = msgInput.value;
+    if (!text.trim() || !currentRoomId) return; // Oda seçili değilse gönderme
+    
+    sendMessage(text, 'text');
+    msgInput.value = '';
+});
 
-// Hesap Makinesi
-const calculatorOverlay = document.getElementById('calculator-overlay');
-const stealthBtn = document.getElementById('stealth-btn');
-const exitCalcBtn = document.getElementById('exit-calc');
-const calcButtonsContainer = document.querySelector('.calc-buttons');
+// Dosya Yükleme (KESİN ÇÖZÜM)
+attachBtn.addEventListener('click', () => {
+    if (!currentRoomId) return alert("Önce bir odaya girin.");
+    fileInput.click();
+});
 
-calcButtonsContainer.innerHTML = `
-    <button class="calc-btn btn-gray" onclick="calcAction('AC')">AC</button>
-    <button class="calc-btn btn-gray" onclick="calcAction('+/-')">+/-</button>
-    <button class="calc-btn btn-gray" onclick="calcAction('%')">%</button>
-    <button class="calc-btn btn-orange" onclick="calcAction('/')">÷</button>
-    <button class="calc-btn btn-dark" onclick="calcAction('7')">7</button>
-    <button class="calc-btn btn-dark" onclick="calcAction('8')">8</button>
-    <button class="calc-btn btn-dark" onclick="calcAction('9')">9</button>
-    <button class="calc-btn btn-orange" onclick="calcAction('*')">×</button>
-    <button class="calc-btn btn-dark" onclick="calcAction('4')">4</button>
-    <button class="calc-btn btn-dark" onclick="calcAction('5')">5</button>
-    <button class="calc-btn btn-dark" onclick="calcAction('6')">6</button>
-    <button class="calc-btn btn-orange" onclick="calcAction('-')">-</button>
-    <button class="calc-btn btn-dark" onclick="calcAction('1')">1</button>
-    <button class="calc-btn btn-dark" onclick="calcAction('2')">2</button>
-    <button class="calc-btn btn-dark" onclick="calcAction('3')">3</button>
-    <button class="calc-btn btn-orange" onclick="calcAction('+')">+</button>
-    <button class="calc-btn btn-dark btn-zero" onclick="calcAction('0')">0</button>
-    <button class="calc-btn btn-dark" onclick="calcAction('.')">,</button>
-    <button class="calc-btn btn-orange" onclick="calcAction('=')">=</button>
-`;
-let currentInput = '0';
-const screenDiv = document.querySelector('.calc-screen');
-window.calcAction = function(val) {
-    if (val === 'AC') { currentInput = '0'; }
-    else if (val === '=') { try { currentInput = eval(currentInput).toString(); } catch { currentInput = 'Error'; } }
-    else if (val === '+/-') { currentInput = (parseFloat(currentInput) * -1).toString(); }
-    else if (val === '%') { currentInput = (parseFloat(currentInput) / 100).toString(); }
-    else { if (currentInput === '0') currentInput = ''; currentInput += val; }
-    screenDiv.innerText = currentInput;
+fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    attachBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; // Yükleniyor ikonu
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', UPLOAD_PRESET);
+
+    try {
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`, {
+            method: 'POST',
+            body: formData
+        });
+        const data = await res.json();
+        
+        let type = 'raw';
+        if (data.resource_type === 'image') type = 'image';
+        
+        sendMessage(data.secure_url, type, file.name);
+    } catch (err) {
+        alert("Yükleme başarısız oldu.");
+        console.error(err);
+    } finally {
+        attachBtn.innerHTML = '<i class="fa-solid fa-plus"></i>';
+        fileInput.value = '';
+    }
+});
+
+function sendMessage(content, type, fileName) {
+    db.collection('messages').add({
+        content: content,
+        type: type,
+        fileName: fileName || null,
+        sender: currentUser.username,
+        uid: currentUser.uid,
+        roomId: currentRoomId,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
 }
-stealthBtn.addEventListener('click', () => { calculatorOverlay.classList.remove('hidden'); });
-exitCalcBtn.addEventListener('click', () => { calculatorOverlay.classList.add('hidden'); });
+
+// ==========================================
+// 4. AYARLAR & TEMA
+// ==========================================
+
+function changeTheme(color) {
+    applyTheme(color);
+    // DB Güncelle
+    if (currentUser) {
+        db.collection('users').doc(currentUser.uid).update({ theme: color });
+        currentUser.theme = color;
+    }
+}
+
+function applyTheme(color) {
+    document.documentElement.style.setProperty('--accent', color);
+}
+
+document.getElementById('logout-btn').addEventListener('click', () => {
+    auth.signOut();
+    window.location.reload();
+});
+
+// Profil Resmi Yükleme (Setup ekranında)
+document.getElementById('setup-avatar-btn').addEventListener('click', () => {
+    // Basit olması için fileInput'u burada da kullanıyoruz
+    // Ama normalde ayrı input olması daha temiz olur.
+    // Şimdilik hızlı çözüm:
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', UPLOAD_PRESET);
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`, { method: 'POST', body: formData });
+        const data = await res.json();
+        document.getElementById('setup-avatar-preview').src = data.secure_url;
+    };
+    input.click();
+});
+
+
+// HESAP MAKİNESİ (Sadeleştirilmiş - Butonları JS ile dolduruyoruz)
+const calcOverlay = document.getElementById('calculator-overlay');
+const stealthBtn = document.getElementById('stealth-btn');
+const exitCalc = document.getElementById('exit-calc');
+
+// Tuşlar
+const calcKeys = ['AC','+/-','%','/','7','8','9','*','4','5','6','-','1','2','3','+','0','.','='];
+const calcContainer = document.querySelector('.calc-buttons');
+const calcScreen = document.querySelector('.calc-screen');
+let calcInput = "0";
+
+calcKeys.forEach(key => {
+    const btn = document.createElement('button');
+    btn.className = `calc-btn ${['/','*','-','+','='].includes(key) ? 'btn-orange' : (['AC','+/-','%'].includes(key) ? 'btn-gray' : 'btn-dark')}`;
+    if(key === '0') btn.classList.add('btn-zero');
+    btn.innerText = key === '*' ? '×' : (key === '/' ? '÷' : key);
+    
+    btn.onclick = () => {
+        if(key === 'AC') calcInput = "0";
+        else if(key === '=') { try { calcInput = eval(calcInput).toString(); } catch{calcInput="Error";} }
+        else {
+            if(calcInput === "0") calcInput = "";
+            calcInput += key;
+        }
+        calcScreen.innerText = calcInput;
+    };
+    calcContainer.appendChild(btn);
+});
+
+stealthBtn.addEventListener('click', () => calcOverlay.classList.remove('hidden'));
+exitCalc.addEventListener('click', () => calcOverlay.classList.add('hidden'));
