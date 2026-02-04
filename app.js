@@ -1,110 +1,173 @@
-// PROTOCOL V1 - MAIN LOGIC
-
-// --- 1. DOM ELEMENTLERİ ---
+// --- DOM ELEMENTLERİ ---
 const authContainer = document.getElementById('auth-container');
 const appContainer = document.getElementById('app-container');
 const loginForm = document.getElementById('login-form');
 const emailInput = document.getElementById('email');
 const passwordInput = document.getElementById('password');
-const loginBtn = document.getElementById('login-btn');
 const authErrorMsg = document.getElementById('auth-error-msg');
 const showRegisterBtn = document.getElementById('show-register');
 const logoutBtn = document.getElementById('logout-btn');
+const messagesFeed = document.getElementById('messages-feed');
+const msgInput = document.getElementById('msg-input');
+const sendBtn = document.getElementById('send-btn');
 
-const stealthBtn = document.getElementById('stealth-btn');
+// --- 1. HESAP MAKİNESİ (IPHONE MANTIĞI) ---
 const calculatorOverlay = document.getElementById('calculator-overlay');
+const stealthBtn = document.getElementById('stealth-btn');
 const exitCalcBtn = document.getElementById('exit-calc');
 
-// --- 2. AUTHENTICATION (KİMLİK DOĞRULAMA) ---
+// iPhone Hesap Makinesi HTML Yapısını Oluşturuyoruz (JS ile inject ediyoruz ki temiz olsun)
+const calcButtonsContainer = document.querySelector('.calc-buttons');
+calcButtonsContainer.innerHTML = `
+    <button class="calc-btn btn-gray" onclick="calcAction('AC')">AC</button>
+    <button class="calc-btn btn-gray" onclick="calcAction('+/-')">+/-</button>
+    <button class="calc-btn btn-gray" onclick="calcAction('%')">%</button>
+    <button class="calc-btn btn-orange" onclick="calcAction('/')">÷</button>
+    <button class="calc-btn btn-dark" onclick="calcAction('7')">7</button>
+    <button class="calc-btn btn-dark" onclick="calcAction('8')">8</button>
+    <button class="calc-btn btn-dark" onclick="calcAction('9')">9</button>
+    <button class="calc-btn btn-orange" onclick="calcAction('*')">×</button>
+    <button class="calc-btn btn-dark" onclick="calcAction('4')">4</button>
+    <button class="calc-btn btn-dark" onclick="calcAction('5')">5</button>
+    <button class="calc-btn btn-dark" onclick="calcAction('6')">6</button>
+    <button class="calc-btn btn-orange" onclick="calcAction('-')">-</button>
+    <button class="calc-btn btn-dark" onclick="calcAction('1')">1</button>
+    <button class="calc-btn btn-dark" onclick="calcAction('2')">2</button>
+    <button class="calc-btn btn-dark" onclick="calcAction('3')">3</button>
+    <button class="calc-btn btn-orange" onclick="calcAction('+')">+</button>
+    <button class="calc-btn btn-dark btn-zero" onclick="calcAction('0')">0</button>
+    <button class="calc-btn btn-dark" onclick="calcAction('.')">,</button>
+    <button class="calc-btn btn-orange" onclick="calcAction('=')">=</button>
+`;
 
-// Kullanıcı Durumunu Dinle (Giriş yaptı mı?)
+let currentInput = '0';
+const screenDiv = document.querySelector('.calc-screen');
+
+window.calcAction = function(val) {
+    if (val === 'AC') {
+        currentInput = '0';
+    } else if (val === '=') {
+        try {
+            currentInput = eval(currentInput).toString();
+        } catch {
+            currentInput = 'Error';
+        }
+    } else if (val === '+/-') {
+        currentInput = (parseFloat(currentInput) * -1).toString();
+    } else if (val === '%') {
+        currentInput = (parseFloat(currentInput) / 100).toString();
+    } else {
+        if (currentInput === '0') currentInput = '';
+        currentInput += val;
+    }
+    screenDiv.innerText = currentInput;
+}
+
+// Gizli Geçişler
+stealthBtn.addEventListener('click', () => { calculatorOverlay.classList.remove('hidden'); });
+exitCalcBtn.addEventListener('click', () => { calculatorOverlay.classList.add('hidden'); }); // Üst boşluğa tıklayınca kapanır
+
+
+// --- 2. GİRİŞ VE KAYIT İŞLEMLERİ ---
+let isRegister = false;
+
+// Oturum Kontrolü
 auth.onAuthStateChanged(user => {
     if (user) {
-        // Kullanıcı giriş yapmış -> Uygulamayı Aç
-        console.log("Kullanıcı aktif:", user.email);
         authContainer.classList.add('hidden');
         appContainer.classList.remove('hidden');
+        loadMessages(); // Giriş yapınca mesajları yükle
     } else {
-        // Giriş yapmamış -> Login Ekranını Göster
-        console.log("Kullanıcı yok.");
         authContainer.classList.remove('hidden');
         appContainer.classList.add('hidden');
     }
 });
 
-// Giriş Yap / Kayıt Ol Butonu
-let isRegisterMode = false;
-
 showRegisterBtn.addEventListener('click', () => {
-    isRegisterMode = !isRegisterMode;
-    if (isRegisterMode) {
-        document.querySelector('.logo h1').innerText = "KAYIT OL";
-        loginBtn.innerText = "HESAP OLUŞTUR";
-        showRegisterBtn.innerText = "Giriş Yap";
-    } else {
-        document.querySelector('.logo h1').innerText = "PROTOCOL";
-        loginBtn.innerText = "GİRİŞ YAP";
-        showRegisterBtn.innerText = "Kayıt Ol";
-    }
-    authErrorMsg.innerText = "";
+    isRegister = !isRegister;
+    document.querySelector('.logo h1').innerText = isRegister ? "KAYIT OL" : "PROTOCOL";
+    document.getElementById('login-btn').innerText = isRegister ? "HESAP OLUŞTUR" : "GİRİŞ YAP";
+    showRegisterBtn.innerText = isRegister ? "Giriş Yap" : "Kayıt Ol";
 });
 
-// Form Gönderildiğinde
 loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const email = emailInput.value;
     const password = passwordInput.value;
 
-    if (isRegisterMode) {
-        // KAYIT OLMA İŞLEMİ
-        auth.createUserWithEmailAndPassword(email, password)
-            .then((userCredential) => {
-                // Kayıt başarılı, otomatik giriş yapar
-                console.log("Kayıt başarılı");
-            })
-            .catch((error) => {
-                authErrorMsg.innerText = "Hata: " + error.message;
-            });
+    if (isRegister) {
+        auth.createUserWithEmailAndPassword(email, password).catch(err => alert(err.message));
     } else {
-        // GİRİŞ YAPMA İŞLEMİ
-        auth.signInWithEmailAndPassword(email, password)
-            .then((userCredential) => {
-                // Giriş başarılı
-                console.log("Giriş başarılı");
-            })
-            .catch((error) => {
-                authErrorMsg.innerText = "Hata: Bilgiler yanlış.";
-            });
+        auth.signInWithEmailAndPassword(email, password).catch(err => alert("Giriş başarısız. Bilgileri kontrol et."));
     }
 });
 
-// Çıkış Yap
-logoutBtn.addEventListener('click', () => {
-    auth.signOut();
-    // Sayfa otomatik yenilenir ve authStateChanged tetiklenir
-});
+logoutBtn.addEventListener('click', () => auth.signOut());
 
-// --- 3. BUKALEMUN MODU (HESAP MAKİNESİ) ---
-stealthBtn.addEventListener('click', () => {
-    calculatorOverlay.classList.remove('hidden');
-});
 
-exitCalcBtn.addEventListener('click', () => {
-    calculatorOverlay.classList.add('hidden');
-});
+// --- 3. MESAJLAŞMA SİSTEMİ (GERÇEK VERİTABANI) ---
 
-// --- 4. BASİT HESAP MAKİNESİ FONKSİYONLARI ---
-const calcScreen = document.querySelector('.calc-screen');
-const calcButtons = document.querySelectorAll('.calc-buttons button');
+// Mesaj Gönderme
+function sendMessage() {
+    const text = msgInput.value;
+    if (text.trim() === '') return;
 
-calcButtons.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        const val = e.target.innerText;
-        if (val === 'C') {
-            calcScreen.innerText = '0';
-        } else if (val !== 'X') {
-            if (calcScreen.innerText === '0') calcScreen.innerText = '';
-            calcScreen.innerText += val;
+    const user = auth.currentUser;
+    if (user) {
+        // Firestore'a Kaydet
+        db.collection('messages').add({
+            text: text,
+            sender: user.email,
+            uid: user.uid,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        msgInput.value = '';
+    }
+}
+
+sendBtn.addEventListener('click', sendMessage);
+msgInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendMessage(); });
+
+
+// Mesajları Canlı Dinleme (Real-time Listener)
+function loadMessages() {
+    db.collection('messages')
+      .orderBy('timestamp', 'asc') // Eskiden yeniye sırala
+      .onSnapshot(snapshot => {
+          messagesFeed.innerHTML = ''; // Listeyi temizle
+          const currentUser = auth.currentUser.uid;
+
+          snapshot.forEach(doc => {
+              const msg = doc.data();
+              const div = document.createElement('div');
+              // Mesaj bana mı ait başkasına mı?
+              const type = (msg.uid === currentUser) ? 'sent' : 'received';
+              
+              // Zaman formatı
+              let time = '...';
+              if(msg.timestamp) {
+                  const date = msg.timestamp.toDate();
+                  time = date.getHours() + ':' + (date.getMinutes()<10?'0':'') + date.getMinutes();
+              }
+
+              div.classList.add('message', type);
+              div.innerHTML = `
+                  <p>${msg.text}</p>
+                  <span class="msg-time">${time}</span>
+              `;
+              messagesFeed.appendChild(div);
+          });
+          // En alta kaydır
+          messagesFeed.scrollTop = messagesFeed.scrollHeight;
+      });
+}
+
+// Butonları Aktif Hissettirme (Boş olanlar için)
+document.querySelectorAll('.server-icon').forEach(icon => {
+    icon.addEventListener('click', function() {
+        if(!this.classList.contains('logout-btn')) {
+            document.querySelectorAll('.server-icon').forEach(i => i.classList.remove('active'));
+            this.classList.add('active');
         }
     });
 });
