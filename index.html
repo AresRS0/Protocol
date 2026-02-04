@@ -3,203 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PROTOCOL</title>
-    <link rel="stylesheet" href="style.css">
+    <title>PROTOCOL | Discord Mode</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
 </head>
 <body>
 
-    <section id="auth-container">
-        <div class="login-box">
-            <div class="logo">
-                <i class="fa-solid fa-shield-halved"></i>
-                <h1>PROTOCOL</h1>
-                <p>Güvenli İletişim Ağı</p>
+    <div id="calculator-overlay" class="hidden">
+        <div class="calc-screen">0</div>
+        <div class="calc-buttons"></div>
+        <button id="exit-calc"></button>
+    </div>
+
+    <section id="auth-layer">
+        <div class="auth-box">
+            <div class="auth-header">
+                <h3>Hoş Geldiniz</h3>
+                <p>Hey, tekrar seni görmek güzel!</p>
             </div>
             
             <form id="login-form">
-                <div class="input-group">
-                    <i class="fa-solid fa-envelope"></i>
-                    <input type="email" id="email" placeholder="E-Posta Adresi" required>
+                <div class="form-group">
+                    <label>E-POSTA VEYA TELEFON</label>
+                    <input type="email" id="email" required>
                 </div>
-                <div class="input-group">
-                    <i class="fa-solid fa-lock"></i>
-                    <input type="password" id="password" placeholder="Şifre" required>
+                <div class="form-group">
+                    <label>ŞİFRE</label>
+                    <input type="password" id="password" required>
                 </div>
-                <button type="submit" id="login-btn">GİRİŞ YAP</button>
+                <a href="#" class="forgot-pass">Şifreni mi unuttun?</a>
+                <button type="submit" id="login-btn">Giriş Yap</button>
             </form>
 
-            <div class="divider"><span>VEYA</span></div>
-            <button id="google-btn"><i class="fa-brands fa-google"></i> Google ile Devam Et</button>
+            <div class="divider"><span>veya</span></div>
+            <button id="google-btn"><i class="fa-brands fa-google"></i> Google ile Giriş</button>
 
-            <div class="auth-footer">
-                <p>Hesabın yok mu? <span id="show-register">Kayıt Ol</span></p>
-                <p id="auth-error-msg" class="error-msg"></p>
-            </div>
+            <p class="register-text">
+                Hesabın yok mu? <span id="show-register">Kaydol</span>
+            </p>
+            <p id="auth-error" class="error-text"></p>
         </div>
     </section>
 
-    <section id="verify-email-screen" class="hidden">
-        <div class="login-box">
-            <i class="fa-solid fa-lock" style="font-size: 40px; color: var(--danger);"></i>
-            <h2>Erişim Kısıtlandı</h2>
-            <p>E-posta adresini doğrulaman gerekiyor.</p>
-            <p id="verify-status" class="status-text"></p>
-            <button id="check-verify-btn">DURUMU KONTROL ET</button>
-            <button id="resend-verify-btn" class="secondary-btn">Link Gelmedi, Tekrar Gönder</button>
-            <p class="link-text" onclick="auth.signOut()">Farklı Hesaba Geç</p>
+    <section id="verify-layer" class="hidden">
+        <div class="auth-box verify-box">
+            <img src="https://cdn-icons-png.flaticon.com/512/646/646094.png" width="80">
+            <h3>E-postanı Doğrula</h3>
+            <p>Güvenlik gereği, devam etmeden önce e-postana gelen linke tıklamalısın.</p>
+            <button id="check-verify-btn">Doğruladım, Giriş Yap</button>
+            <button id="resend-verify-btn" class="link-btn">Tekrar Gönder</button>
+            <button id="logout-verify-btn" class="link-btn red">Çıkış Yap</button>
         </div>
     </section>
 
-    <section id="profile-setup-screen" class="hidden">
-        <div class="login-box">
-            <h2>Kimlik Oluştur</h2>
-            <p>Sisteme girmek için bir kod adı belirle.</p>
-            
-            <div class="profile-upload" id="setup-avatar-btn">
-                <img id="setup-avatar-preview" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
-                <div class="overlay"><i class="fa-solid fa-camera"></i></div>
+    <section id="profile-layer" class="hidden">
+        <div class="auth-box">
+            <h3>Profilini Oluştur</h3>
+            <div class="avatar-upload" id="setup-avatar-btn">
+                <img id="setup-avatar-preview" src="https://cdn.discordapp.com/embed/avatars/0.png">
+                <div class="overlay"><i class="fa-solid fa-plus"></i></div>
             </div>
-            
-            <div class="input-group">
-                <i class="fa-solid fa-user-secret"></i>
-                <input type="text" id="setup-username" placeholder="Kod Adı / Nickname" required>
+            <div class="form-group">
+                <label>KULLANICI ADI</label>
+                <input type="text" id="setup-username" required>
             </div>
-
-            <button id="save-profile-btn">KAYDET VE BAŞLA</button>
+            <button id="save-profile-btn">Başla</button>
         </div>
     </section>
 
-    <div id="app-container" class="hidden">
+    <div id="app-layer" class="hidden">
         
-        <nav id="sidebar">
-            <div class="server-icon active" id="home-btn" title="Ana Ekran"><i class="fa-solid fa-shield-halved"></i></div>
-            <div class="separator"></div>
+        <nav class="guilds-nav">
+            <div class="guild-icon home-icon active" id="home-btn" title="Ana Sayfa">
+                <i class="fa-brands fa-discord"></i>
+            </div>
+            <div class="guild-separator"></div>
             
-            <div id="my-rooms-list">
-                </div>
+            <div id="server-list"></div>
 
-            <div class="server-icon add-server" id="open-room-modal-btn" title="Oda Ekle/Kur">+</div>
-            
-            <div class="spacer"></div>
-            
-            <div class="server-icon" id="settings-trigger" title="Ayarlar">
-                <img id="nav-avatar" src="" alt="Profil">
+            <div class="guild-icon add-guild-btn" id="add-server-modal-btn">
+                <i class="fa-solid fa-plus"></i>
             </div>
         </nav>
 
-        <aside id="info-panel">
-            <div class="panel-header">
-                <h2>Akış</h2>
-            </div>
-            <div class="news-ticker">
-                <p>SYSTEM: Bağlantı şifreli. Protokol aktif.</p>
-            </div>
+        <aside class="sidebar">
+            <header class="server-header">
+                <h3 id="sidebar-server-name">Protocol V2</h3>
+                <i class="fa-solid fa-chevron-down"></i>
+            </header>
             
-            <div id="room-info-card" class="room-card hidden">
-                <div class="card-icon">#</div>
-                <div class="card-details">
-                    <h3 id="panel-room-name">Oda Adı</h3>
-                    <p>Oda ID: <span id="panel-room-id">...</span></p>
+            <div class="channels-scroller">
+                <div class="category">
+                    <div class="category-name"><i class="fa-solid fa-angle-down"></i> METİN KANALLARI</div>
+                    
+                    <div class="channel active">
+                        <i class="fa-solid fa-hashtag"></i> genel-sohbet
+                    </div>
+                    <div class="channel">
+                        <i class="fa-solid fa-hashtag"></i> operasyon-kayıtları
+                    </div>
+                </div>
+
+                 <div class="category">
+                    <div class="category-name"><i class="fa-solid fa-angle-down"></i> SES KANALLARI</div>
+                    <div class="channel voice">
+                        <i class="fa-solid fa-volume-high"></i> Toplantı Odası
+                    </div>
                 </div>
             </div>
 
-            <div id="empty-state-msg" class="empty-state">
-                <i class="fa-solid fa-arrow-left"></i>
-                <p>Bir odaya katılın veya yeni bir oda oluşturun.</p>
+            <div class="user-panel">
+                <div class="user-avatar-wrapper">
+                    <img id="user-panel-avatar" src="">
+                    <div class="status-indicator online"></div>
+                </div>
+                <div class="user-name-tag">
+                    <div class="username" id="user-panel-name">...</div>
+                    <div class="discriminator">#0001</div>
+                </div>
+                <div class="user-actions">
+                    <i class="fa-solid fa-microphone"></i>
+                    <i class="fa-solid fa-headphones"></i>
+                    <i class="fa-solid fa-gear" id="open-settings-btn" title="Ayarlar"></i>
+                </div>
             </div>
         </aside>
 
-        <main id="chat-area">
+        <main class="chat-area">
             <header class="chat-header">
                 <div class="header-left">
-                    <i class="fa-solid fa-hashtag"></i>
-                    <div>
-                        <h3 id="header-room-name">Genel</h3>
-                        <span id="user-status">Çevrimiçi</span>
-                    </div>
+                    <i class="fa-solid fa-hashtag text-muted"></i>
+                    <h3 id="chat-header-name">genel-sohbet</h3>
+                    <span class="topic">Güvenli hat aktif.</span>
                 </div>
                 <div class="header-right">
-                    <i class="fa-solid fa-calculator" id="stealth-btn"></i> 
+                    <i class="fa-solid fa-inbox" id="stealth-trigger"></i>
+                    <i class="fa-solid fa-circle-question"></i>
                 </div>
             </header>
 
-            <div class="messages-container" id="messages-feed">
+            <div class="messages-wrapper" id="messages-feed">
                 </div>
 
-            <div class="input-area">
-                <input type="file" id="file-input" style="display: none;">
-                
-                <button class="attach-btn" id="attach-btn"><i class="fa-solid fa-plus"></i></button>
-                <input type="text" id="msg-input" placeholder="Mesaj yazın...">
-                <button class="send-btn" id="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
-            </div>
-        </main>
-    </div>
-
-    <div id="room-modal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Oda Yönetimi</h3>
-                <span class="close-modal" data-target="room-modal">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div class="tab-buttons">
-                    <button class="tab-btn active" data-tab="join">Odaya Katıl</button>
-                    <button class="tab-btn" data-tab="create">Oda Oluştur</button>
-                </div>
-                
-                <div id="tab-join" class="tab-content active">
-                    <input type="text" id="join-room-code" placeholder="Oda Kodu (Örn: #Operasyon1)" class="modal-input">
-                    <button id="join-room-btn">KATIL</button>
-                </div>
-
-                <div id="tab-create" class="tab-content hidden">
-                    <input type="text" id="create-room-name" placeholder="Oda İsmi (Örn: Lojistik)" class="modal-input">
-                    <input type="text" id="create-room-code" placeholder="Özel Kod (Boş bırakırsan otomatik)" class="modal-input">
-                    <button id="create-room-btn">OLUŞTUR</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="settings-modal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Ayarlar</h3>
-                <span class="close-modal" data-target="settings-modal">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div class="setting-item">
-                    <label>Tema Rengi</label>
-                    <div class="color-options">
-                        <div class="dot" style="background:#00cec9" onclick="changeTheme('#00cec9')"></div>
-                        <div class="dot" style="background:#ff7675" onclick="changeTheme('#ff7675')"></div>
-                        <div class="dot" style="background:#74b9ff" onclick="changeTheme('#74b9ff')"></div>
-                        <div class="dot" style="background:#a29bfe" onclick="changeTheme('#a29bfe')"></div>
-                        <div class="dot" style="background:#55efc4" onclick="changeTheme('#55efc4')"></div>
+            <div class="chat-input-area">
+                <div class="input-wrapper">
+                    <button class="attach-btn" id="file-trigger">
+                        <i class="fa-solid fa-circle-plus"></i>
+                    </button>
+                    <input type="text" id="msg-input" placeholder="#genel-sohbet kanalına mesaj gönder">
+                    <div class="input-icons">
+                        <i class="fa-solid fa-gift"></i>
+                        <i class="fa-solid fa-face-smile"></i>
                     </div>
                 </div>
-                <hr>
-                <div class="setting-item">
-                    <label>Hesap</label>
-                    <p id="settings-email-display" style="color:#aaa; font-size:12px; margin-bottom:10px;">...</p>
-                    <button class="danger-btn" id="logout-btn">Güvenli Çıkış</button>
+                <input type="file" id="file-input" hidden>
+            </div>
+        </main>
+
+        <aside class="members-sidebar">
+            <div class="members-category">ÇEVRİMİÇİ — 1</div>
+            <div class="member">
+                <div class="member-avatar">
+                    <img src="https://cdn.discordapp.com/embed/avatars/0.png" id="member-list-avatar">
+                    <div class="status-indicator online"></div>
                 </div>
+                <div class="member-info">
+                    <div class="member-name" id="member-list-name">Admin</div>
+                    <div class="member-status">Protocol V2</div>
+                </div>
+            </div>
+        </aside>
+
+    </div> <div id="server-modal" class="modal-backdrop hidden">
+        <div class="modal-box">
+            <button class="close-modal">&times;</button>
+            <h3>Bir Sunucu Oluştur</h3>
+            <p>Sunucun, senin ve arkadaşlarının takıldığı yerdir.</p>
+            
+            <div class="input-field">
+                <label>SUNUCU ADI</label>
+                <input type="text" id="new-server-name" placeholder="Süper Sunucum">
+            </div>
+            <div class="input-field">
+                <label>VEYA BİR DAVETLE KATIL</label>
+                <input type="text" id="join-server-code" placeholder="#DavetKodu">
+            </div>
+
+            <div class="modal-footer">
+                <button class="back-btn">Geri Dön</button>
+                <button class="primary-btn" id="create-join-btn">Oluştur / Katıl</button>
             </div>
         </div>
     </div>
 
-    <div id="calculator-overlay" class="hidden">
-        <div class="calc-screen">0</div>
-        <div class="calc-buttons"></div> <button id="exit-calc"></button>
+    <div id="settings-modal" class="modal-backdrop hidden">
+        <div class="modal-box settings-box">
+            <h3>Ayarlar</h3>
+            <div class="input-field">
+                <label>TEMA RENGİ</label>
+                <div class="color-grid">
+                    <div class="c-dot" style="background:#5865F2" onclick="setTheme('#5865F2')"></div>
+                    <div class="c-dot" style="background:#3BA55C" onclick="setTheme('#3BA55C')"></div>
+                    <div class="c-dot" style="background:#FAA61A" onclick="setTheme('#FAA61A')"></div>
+                    <div class="c-dot" style="background:#ED4245" onclick="setTheme('#ED4245')"></div>
+                </div>
+            </div>
+            <button id="logout-btn" class="red-btn">Çıkış Yap</button>
+            <button class="close-modal text-btn">Kapat</button>
+        </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    
     <script src="firebase-config.js"></script>
     <script src="app.js"></script>
 </body>

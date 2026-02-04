@@ -1,55 +1,56 @@
-// --- CLOUDINARY AYARLARI ---
+// ==========================================
+// 0. AYARLAR & CONFIG
+// ==========================================
 const CLOUD_NAME = "ddxf1fhcy";
 const UPLOAD_PRESET = "go1ovdi2";
 
-// --- DOM ELEMENTLERİ ---
+// DOM SEÇİCİLERİ
 const screens = {
-    auth: document.getElementById('auth-container'),
-    verify: document.getElementById('verify-email-screen'),
-    profile: document.getElementById('profile-setup-screen'),
-    app: document.getElementById('app-container')
+    auth: document.getElementById('auth-layer'),
+    verify: document.getElementById('verify-layer'),
+    profile: document.getElementById('profile-layer'),
+    app: document.getElementById('app-layer')
 };
 
-// UI Elemanları
+// UI Elementleri
+const msgFeed = document.getElementById('messages-feed');
 const msgInput = document.getElementById('msg-input');
-const messagesFeed = document.getElementById('messages-feed');
-const attachBtn = document.getElementById('attach-btn');
 const fileInput = document.getElementById('file-input');
-const sendBtn = document.getElementById('send-btn');
-const roomModal = document.getElementById('room-modal');
-const settingsModal = document.getElementById('settings-modal');
+const fileTrigger = document.getElementById('file-trigger');
 
-// Durum Değişkenleri
+// Durum
 let currentUser = null;
-let currentRoomId = null;
+let currentRoom = null;
 
 // ==========================================
-// 1. GİRİŞ & GÜVENLİK
+// 1. AUTHENTICATION (Kimlik Doğrulama)
 // ==========================================
 
 auth.onAuthStateChanged(async (user) => {
-    // Tüm ekranları gizle
-    Object.values(screens).forEach(el => el.classList.add('hidden'));
-
+    hideAllScreens();
+    
     if (user) {
-        // Mail onayı kontrolü (Google hariç)
+        // E-posta ile giriş yapanlar için kontrol
         const isGoogle = user.providerData.some(p => p.providerId === 'google.com');
+        
         if (!isGoogle && !user.emailVerified) {
-            await user.reload(); // Sunucuyu zorla
-            if (!user.emailVerified) {
+            // Zorla yenile ki durumu anlık görsün
+            await user.reload();
+            if(!user.emailVerified) {
                 screens.verify.classList.remove('hidden');
                 return;
             }
         }
 
-        // Profil Kontrolü
-        const userDoc = await db.collection('users').doc(user.uid).get();
-        if (userDoc.exists) {
-            currentUser = userDoc.data();
+        // Kullanıcı Profili Var mı?
+        const doc = await db.collection('users').doc(user.uid).get();
+        if (doc.exists) {
+            currentUser = doc.data();
             initApp();
         } else {
-            // Profil oluşturma ekranı
-            if (user.photoURL) document.getElementById('setup-avatar-preview').src = user.photoURL;
+            // Profil Yok -> Oluştur
+            if(user.photoURL) document.getElementById('setup-avatar-preview').src = user.photoURL;
+            if(user.displayName) document.getElementById('setup-username').value = user.displayName;
             screens.profile.classList.remove('hidden');
         }
     } else {
@@ -57,232 +58,209 @@ auth.onAuthStateChanged(async (user) => {
     }
 });
 
+function hideAllScreens() {
+    Object.values(screens).forEach(el => el.classList.add('hidden'));
+}
+
 // Giriş İşlemleri
 document.getElementById('login-form').addEventListener('submit', (e) => {
     e.preventDefault();
     const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    auth.signInWithEmailAndPassword(email, password).catch(err => alert(err.message));
+    const pass = document.getElementById('password').value;
+    auth.signInWithEmailAndPassword(email, pass).catch(err => document.getElementById('auth-error').innerText = err.message);
 });
 
 document.getElementById('google-btn').addEventListener('click', () => {
     const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider).catch(err => alert(err.message));
+    auth.signInWithPopup(provider).catch(console.error);
 });
 
+// Kayıt İşlemleri
 document.getElementById('show-register').addEventListener('click', () => {
     const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    if(!email || !password) return alert("Kayıt olmak için E-posta ve Şifre girin.");
+    const pass = document.getElementById('password').value;
+    if(!email || !pass) return alert("E-posta ve şifre giriniz.");
     
-    auth.createUserWithEmailAndPassword(email, password).then(res => {
-        res.user.sendEmailVerification();
-        alert("Doğrulama maili gönderildi. Lütfen onaylayın.");
-    }).catch(err => alert(err.message));
+    auth.createUserWithEmailAndPassword(email, pass)
+        .then(creds => {
+            creds.user.sendEmailVerification();
+            alert("Doğrulama maili gönderildi.");
+        })
+        .catch(err => alert(err.message));
 });
 
-// Profil Kaydetme
+// Profil Kaydet
 document.getElementById('save-profile-btn').addEventListener('click', async () => {
     const username = document.getElementById('setup-username').value;
-    if (!username) return alert("İsim şart.");
-    
-    const user = auth.currentUser;
     const avatar = document.getElementById('setup-avatar-preview').src;
-
+    
+    if(!username) return alert("Kullanıcı adı gerekli");
+    
     const userData = {
-        uid: user.uid,
-        email: user.email,
+        uid: auth.currentUser.uid,
+        email: auth.currentUser.email,
         username: username,
         avatar: avatar,
-        theme: '#00cec9',
+        theme: '#5865F2',
         rooms: ['Genel'], // Varsayılan oda
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
-
-    await db.collection('users').doc(user.uid).set(userData);
+    
+    await db.collection('users').doc(auth.currentUser.uid).set(userData);
     currentUser = userData;
     initApp();
 });
 
 // ==========================================
-// 2. UYGULAMA BAŞLATMA & ODA YÖNETİMİ
+// 2. UYGULAMA MANTIĞI & ODA SİSTEMİ
 // ==========================================
 
 function initApp() {
     screens.app.classList.remove('hidden');
     
-    // Profili Yükle
-    document.getElementById('nav-avatar').src = currentUser.avatar;
-    document.getElementById('settings-email-display').innerText = currentUser.email;
-    applyTheme(currentUser.theme);
-
-    // Oda Listesini Getir (Şimdilik manuel ekliyoruz, ilerde 'subscribedRooms' kullanırız)
-    // Şimdilik sadece kullanıcıyı boş ekrana atıyoruz, oda seçmesini istiyoruz.
-    renderRoomList();
+    // Kullanıcı Paneli Doldur
+    document.getElementById('user-panel-name').innerText = currentUser.username;
+    document.getElementById('user-panel-avatar').src = currentUser.avatar;
+    document.getElementById('member-list-name').innerText = currentUser.username;
+    document.getElementById('member-list-avatar').src = currentUser.avatar;
+    
+    // Server Listesini Render Et
+    renderServers();
+    
+    // Varsayılan olarak ilk odaya gir
+    enterRoom(currentUser.rooms[0] || 'Genel');
 }
 
-function renderRoomList() {
-    // Burada kullanıcının katıldığı odaları listeleyebiliriz.
-    // Şimdilik basit tutuyoruz, 'Genel' odası varsayılan değil, seçilmesi gerek.
+function renderServers() {
+    const list = document.getElementById('server-list');
+    list.innerHTML = '';
+    
+    // Kullanıcının odalarını listele (Şimdilik basit dizi)
+    currentUser.rooms.forEach(roomId => {
+        const div = document.createElement('div');
+        div.className = 'guild-icon';
+        div.innerText = roomId.substring(0, 2).toUpperCase();
+        div.title = roomId;
+        div.onclick = () => enterRoom(roomId);
+        list.appendChild(div);
+    });
 }
 
-// Odaya Girme
-async function enterRoom(roomId) {
-    currentRoomId = roomId;
+function enterRoom(roomId) {
+    currentRoom = roomId;
     
     // UI Güncelle
-    document.getElementById('empty-state-msg').classList.add('hidden');
-    document.getElementById('room-info-card').classList.remove('hidden');
-    document.getElementById('panel-room-name').innerText = "Oda: " + roomId;
-    document.getElementById('panel-room-id').innerText = roomId;
-    document.getElementById('header-room-name').innerText = roomId;
-
-    // Mesajları Dinle
+    document.getElementById('sidebar-server-name').innerText = roomId;
+    document.getElementById('chat-header-name').innerText = roomId;
+    
+    // Aktif ikonu işaretle
+    document.querySelectorAll('.guild-icon').forEach(el => el.classList.remove('active'));
+    // Basit eşleştirme (Geliştirilebilir)
+    
+    // Mesajları Getir
     loadMessages(roomId);
 }
 
 // Modal Açma/Kapama
-document.getElementById('open-room-modal-btn').addEventListener('click', () => roomModal.classList.remove('hidden'));
-document.getElementById('settings-trigger').addEventListener('click', () => settingsModal.classList.remove('hidden'));
+const serverModal = document.getElementById('server-modal');
+const settingsModal = document.getElementById('settings-modal');
+
+document.getElementById('add-server-modal-btn').addEventListener('click', () => serverModal.classList.remove('hidden'));
+document.getElementById('open-settings-btn').addEventListener('click', () => settingsModal.classList.remove('hidden'));
 
 document.querySelectorAll('.close-modal').forEach(btn => {
     btn.addEventListener('click', () => {
-        document.getElementById(btn.dataset.target).classList.add('hidden');
+        serverModal.classList.add('hidden');
+        settingsModal.classList.add('hidden');
     });
 });
 
-// Tab Geçişleri (Katıl / Oluştur)
-document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-        
-        btn.classList.add('active');
-        document.getElementById(`tab-${btn.dataset.tab}`).classList.remove('hidden');
-    });
-});
-
-// ODA OLUŞTURMA
-document.getElementById('create-room-btn').addEventListener('click', async () => {
-    const name = document.getElementById('create-room-name').value;
-    let code = document.getElementById('create-room-code').value;
-
-    if (!code) code = "#" + Math.random().toString(36).substr(2, 6).toUpperCase(); // Rastgele kod
-    if (!code.startsWith('#')) code = '#' + code;
-
-    // Odaya giriş yap
-    enterRoom(code);
-    roomModal.classList.add('hidden');
+// Oda Oluştur / Katıl
+document.getElementById('create-join-btn').addEventListener('click', async () => {
+    let name = document.getElementById('new-server-name').value;
+    const code = document.getElementById('join-server-code').value;
     
-    // Sol menüye ikon ekle (Geçici)
-    addRoomIconToSidebar(code);
-});
+    let targetRoom = name || code;
+    if(!targetRoom) return;
 
-// ODAYA KATILMA
-document.getElementById('join-room-btn').addEventListener('click', () => {
-    const code = document.getElementById('join-room-code').value;
-    if (!code) return;
+    // Kullanıcının odalarına ekle
+    if(!currentUser.rooms.includes(targetRoom)) {
+        currentUser.rooms.push(targetRoom);
+        await db.collection('users').doc(currentUser.uid).update({
+            rooms: currentUser.rooms
+        });
+    }
     
-    enterRoom(code);
-    roomModal.classList.add('hidden');
-    addRoomIconToSidebar(code);
+    renderServers();
+    enterRoom(targetRoom);
+    serverModal.classList.add('hidden');
 });
 
-function addRoomIconToSidebar(code) {
-    const list = document.getElementById('my-rooms-list');
-    const div = document.createElement('div');
-    div.className = 'server-icon';
-    div.innerText = code.substring(1, 3).toUpperCase();
-    div.title = code;
-    div.onclick = () => enterRoom(code);
-    list.appendChild(div);
-}
 
 // ==========================================
-// 3. MESAJLAŞMA & DOSYA YÜKLEME
+// 3. MESAJLAŞMA SİSTEMİ (Onarılmış)
 // ==========================================
+
+let unsubscribe = null;
 
 function loadMessages(roomId) {
-    // Önceki dinleyiciyi temizle (varsa)
-    // db.collection('messages').onSnapshot...
+    if(unsubscribe) unsubscribe(); // Eskiyi durdur
     
-    db.collection('messages')
+    msgFeed.innerHTML = ''; // Temizle
+    
+    unsubscribe = db.collection('messages')
         .where('roomId', '==', roomId)
         .orderBy('timestamp', 'asc')
         .onSnapshot(snapshot => {
-            messagesFeed.innerHTML = '';
-            snapshot.forEach(doc => {
-                const msg = doc.data();
-                const isMe = msg.uid === auth.currentUser.uid;
-                
-                const div = document.createElement('div');
-                div.className = `message ${isMe ? 'sent' : 'received'}`;
-                
-                // İçerik Oluşturma
-                let contentHTML = '';
-                if (msg.type === 'text') {
-                    contentHTML = `<p>${msg.content}</p>`;
-                } else if (msg.type === 'image') {
-                    contentHTML = `<img src="${msg.content}" style="max-width:100%; border-radius:8px;">`;
-                } else {
-                    contentHTML = `<a href="${msg.content}" target="_blank" style="color:white; text-decoration:underline;">
-                        <i class="fa-solid fa-file"></i> ${msg.fileName || 'Dosya'}
-                    </a>`;
+            snapshot.docChanges().forEach(change => {
+                if(change.type === "added") {
+                    renderMessage(change.doc.data());
                 }
-
-                div.innerHTML = `
-                    <div class="msg-info">${msg.sender}</div>
-                    ${contentHTML}
-                    <span class="msg-time">${new Date(msg.timestamp?.toDate()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                `;
-                messagesFeed.appendChild(div);
             });
-            messagesFeed.scrollTop = messagesFeed.scrollHeight;
+            msgFeed.scrollTop = msgFeed.scrollHeight;
         });
 }
 
-// Mesaj Gönderme
-sendBtn.addEventListener('click', () => {
-    const text = msgInput.value;
-    if (!text.trim() || !currentRoomId) return; // Oda seçili değilse gönderme
+function renderMessage(msg) {
+    const div = document.createElement('div');
+    div.className = 'discord-msg';
     
-    sendMessage(text, 'text');
-    msgInput.value = '';
-});
+    // Tarih Formatı
+    const date = msg.timestamp ? msg.timestamp.toDate() : new Date();
+    const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const dateStr = date.toLocaleDateString();
 
-// Dosya Yükleme (KESİN ÇÖZÜM)
-attachBtn.addEventListener('click', () => {
-    if (!currentRoomId) return alert("Önce bir odaya girin.");
-    fileInput.click();
-});
+    // İçerik Tipi
+    let contentHTML = `<div class="msg-text">${msg.content}</div>`;
+    
+    if(msg.type === 'image') {
+        contentHTML = `<img src="${msg.content}" class="msg-image" onclick="window.open(this.src)">`;
+    } else if(msg.type === 'raw') {
+        contentHTML = `<a href="${msg.content}" target="_blank" class="msg-file-link"><i class="fa-solid fa-download"></i> &nbsp; ${msg.fileName}</a>`;
+    }
 
-fileInput.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    div.innerHTML = `
+        <img src="${msg.avatar}" class="msg-avatar">
+        <div class="msg-content-wrapper">
+            <div class="msg-header">
+                <span class="msg-author" style="color:${msg.themeColor || 'white'}">${msg.sender}</span>
+                <span class="msg-timestamp">${dateStr} ${timeStr}</span>
+            </div>
+            ${contentHTML}
+        </div>
+    `;
+    
+    msgFeed.appendChild(div);
+}
 
-    attachBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; // Yükleniyor ikonu
-
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', UPLOAD_PRESET);
-
-    try {
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`, {
-            method: 'POST',
-            body: formData
-        });
-        const data = await res.json();
-        
-        let type = 'raw';
-        if (data.resource_type === 'image') type = 'image';
-        
-        sendMessage(data.secure_url, type, file.name);
-    } catch (err) {
-        alert("Yükleme başarısız oldu.");
-        console.error(err);
-    } finally {
-        attachBtn.innerHTML = '<i class="fa-solid fa-plus"></i>';
-        fileInput.value = '';
+// Mesaj Gönderme (Enter ve Buton yok, sadece Enter basınca gider Discord gibi)
+msgInput.addEventListener('keypress', (e) => {
+    if(e.key === 'Enter') {
+        const text = msgInput.value.trim();
+        if(text && currentRoom) {
+            sendMessage(text, 'text');
+            msgInput.value = '';
+        }
     }
 });
 
@@ -292,42 +270,75 @@ function sendMessage(content, type, fileName) {
         type: type,
         fileName: fileName || null,
         sender: currentUser.username,
-        uid: currentUser.uid,
-        roomId: currentRoomId,
+        avatar: currentUser.avatar,
+        themeColor: currentUser.theme,
+        roomId: currentRoom,
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
 }
 
+// Dosya Yükleme (Tamir Edildi)
+fileTrigger.addEventListener('click', () => fileInput.click());
+
+fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    
+    // Yükleniyor efekti
+    fileTrigger.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', UPLOAD_PRESET);
+    
+    try {
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`, {
+            method: 'POST',
+            body: formData
+        });
+        const data = await res.json();
+        
+        let type = 'raw';
+        if(data.resource_type === 'image') type = 'image';
+        
+        sendMessage(data.secure_url, type, file.name);
+        
+    } catch(err) {
+        console.error(err);
+        alert("Dosya yüklenemedi!");
+    } finally {
+        fileTrigger.innerHTML = '<i class="fa-solid fa-circle-plus"></i>';
+        fileInput.value = '';
+    }
+});
+
+
 // ==========================================
-// 4. AYARLAR & TEMA
+// 4. DİĞER FONKSİYONLAR
 // ==========================================
 
-function changeTheme(color) {
-    applyTheme(color);
-    // DB Güncelle
-    if (currentUser) {
-        db.collection('users').doc(currentUser.uid).update({ theme: color });
-        currentUser.theme = color;
+// Çıkış Yap (Güvenli Reload)
+document.getElementById('logout-btn').addEventListener('click', () => {
+    auth.signOut().then(() => window.location.reload());
+});
+document.getElementById('logout-verify-btn').addEventListener('click', () => {
+    auth.signOut().then(() => window.location.reload());
+});
+
+// Tema Değiştirme
+window.setTheme = function(color) {
+    document.documentElement.style.setProperty('--brand', color);
+    if(currentUser) {
+        db.collection('users').doc(auth.currentUser.uid).update({ theme: color });
     }
 }
 
-function applyTheme(color) {
-    document.documentElement.style.setProperty('--accent', color);
-}
-
-document.getElementById('logout-btn').addEventListener('click', () => {
-    auth.signOut();
-    window.location.reload();
-});
-
-// Profil Resmi Yükleme (Setup ekranında)
+// Avatar Yükleme (Profil Ekranında)
 document.getElementById('setup-avatar-btn').addEventListener('click', () => {
-    // Basit olması için fileInput'u burada da kullanıyoruz
-    // Ama normalde ayrı input olması daha temiz olur.
-    // Şimdilik hızlı çözüm:
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.onchange = async (e) => {
+    // Geçici input oluştur
+    const inp = document.createElement('input');
+    inp.type = 'file';
+    inp.onchange = async (e) => {
         const file = e.target.files[0];
         const formData = new FormData();
         formData.append('file', file);
@@ -336,16 +347,14 @@ document.getElementById('setup-avatar-btn').addEventListener('click', () => {
         const data = await res.json();
         document.getElementById('setup-avatar-preview').src = data.secure_url;
     };
-    input.click();
+    inp.click();
 });
 
-
-// HESAP MAKİNESİ (Sadeleştirilmiş - Butonları JS ile dolduruyoruz)
+// HESAP MAKİNESİ (Bukalemun)
 const calcOverlay = document.getElementById('calculator-overlay');
-const stealthBtn = document.getElementById('stealth-btn');
+const stealthTrigger = document.getElementById('stealth-trigger');
 const exitCalc = document.getElementById('exit-calc');
 
-// Tuşlar
 const calcKeys = ['AC','+/-','%','/','7','8','9','*','4','5','6','-','1','2','3','+','0','.','='];
 const calcContainer = document.querySelector('.calc-buttons');
 const calcScreen = document.querySelector('.calc-screen');
@@ -369,5 +378,5 @@ calcKeys.forEach(key => {
     calcContainer.appendChild(btn);
 });
 
-stealthBtn.addEventListener('click', () => calcOverlay.classList.remove('hidden'));
+stealthTrigger.addEventListener('click', () => calcOverlay.classList.remove('hidden'));
 exitCalc.addEventListener('click', () => calcOverlay.classList.add('hidden'));
