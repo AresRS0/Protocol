@@ -1,3 +1,7 @@
+// --- CLOUDINARY AYARLARI ---
+const CLOUD_NAME = "ddxf1fhcy";
+const UPLOAD_PRESET = "go1ovdi2";
+
 // --- DOM ELEMENTLERİ ---
 const authContainer = document.getElementById('auth-container');
 const appContainer = document.getElementById('app-container');
@@ -10,13 +14,14 @@ const logoutBtn = document.getElementById('logout-btn');
 const messagesFeed = document.getElementById('messages-feed');
 const msgInput = document.getElementById('msg-input');
 const sendBtn = document.getElementById('send-btn');
+const attachBtn = document.getElementById('attach-btn'); // Dosya butonu
+const fileInput = document.getElementById('file-input'); // Gizli input
 
 // --- 1. HESAP MAKİNESİ (IPHONE MANTIĞI) ---
 const calculatorOverlay = document.getElementById('calculator-overlay');
 const stealthBtn = document.getElementById('stealth-btn');
 const exitCalcBtn = document.getElementById('exit-calc');
 
-// iPhone Hesap Makinesi HTML Yapısını Oluşturuyoruz (JS ile inject ediyoruz ki temiz olsun)
 const calcButtonsContainer = document.querySelector('.calc-buttons');
 calcButtonsContainer.innerHTML = `
     <button class="calc-btn btn-gray" onclick="calcAction('AC')">AC</button>
@@ -47,11 +52,7 @@ window.calcAction = function(val) {
     if (val === 'AC') {
         currentInput = '0';
     } else if (val === '=') {
-        try {
-            currentInput = eval(currentInput).toString();
-        } catch {
-            currentInput = 'Error';
-        }
+        try { currentInput = eval(currentInput).toString(); } catch { currentInput = 'Error'; }
     } else if (val === '+/-') {
         currentInput = (parseFloat(currentInput) * -1).toString();
     } else if (val === '%') {
@@ -63,20 +64,16 @@ window.calcAction = function(val) {
     screenDiv.innerText = currentInput;
 }
 
-// Gizli Geçişler
 stealthBtn.addEventListener('click', () => { calculatorOverlay.classList.remove('hidden'); });
-exitCalcBtn.addEventListener('click', () => { calculatorOverlay.classList.add('hidden'); }); // Üst boşluğa tıklayınca kapanır
+exitCalcBtn.addEventListener('click', () => { calculatorOverlay.classList.add('hidden'); });
 
-
-// --- 2. GİRİŞ VE KAYIT İŞLEMLERİ ---
+// --- 2. AUTH İŞLEMLERİ ---
 let isRegister = false;
-
-// Oturum Kontrolü
 auth.onAuthStateChanged(user => {
     if (user) {
         authContainer.classList.add('hidden');
         appContainer.classList.remove('hidden');
-        loadMessages(); // Giriş yapınca mesajları yükle
+        loadMessages();
     } else {
         authContainer.classList.remove('hidden');
         appContainer.classList.add('hidden');
@@ -94,75 +91,120 @@ loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const email = emailInput.value;
     const password = passwordInput.value;
-
     if (isRegister) {
         auth.createUserWithEmailAndPassword(email, password).catch(err => alert(err.message));
     } else {
-        auth.signInWithEmailAndPassword(email, password).catch(err => alert("Giriş başarısız. Bilgileri kontrol et."));
+        auth.signInWithEmailAndPassword(email, password).catch(err => alert("Giriş başarısız."));
     }
 });
-
 logoutBtn.addEventListener('click', () => auth.signOut());
 
 
-// --- 3. MESAJLAŞMA SİSTEMİ (GERÇEK VERİTABANI) ---
+// --- 3. MESAJ VE DOSYA GÖNDERME ---
 
-// Mesaj Gönderme
-function sendMessage() {
+// Artı butonuna basınca dosya seçiciyi aç
+attachBtn.addEventListener('click', () => {
+    fileInput.click();
+});
+
+// Dosya seçilince Cloudinary'e yükle
+fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Yükleniyor efekti (ikonu değiştir)
+    attachBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', UPLOAD_PRESET);
+
+    try {
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`, {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+        
+        // Yükleme başarılıysa linki al ve mesaj olarak at
+        if (data.secure_url) {
+            sendMessage(data.secure_url, data.resource_type); // type: 'image' veya 'video'
+        }
+    } catch (error) {
+        console.error("Yükleme hatası:", error);
+        alert("Dosya yüklenemedi.");
+    } finally {
+        // İkonu geri düzelt
+        attachBtn.innerHTML = '<i class="fa-solid fa-plus"></i>';
+        fileInput.value = ''; // Inputu temizle
+    }
+});
+
+// Metin Mesajı Gönderme
+sendBtn.addEventListener('click', () => {
     const text = msgInput.value;
     if (text.trim() === '') return;
+    sendMessage(text, 'text');
+    msgInput.value = '';
+});
+msgInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendBtn.click(); });
 
+// Ortak Gönderme Fonksiyonu
+function sendMessage(content, type) {
     const user = auth.currentUser;
     if (user) {
-        // Firestore'a Kaydet
         db.collection('messages').add({
-            text: text,
+            content: content,
+            type: type, // 'text', 'image', 'video'
             sender: user.email,
             uid: user.uid,
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
-        msgInput.value = '';
     }
 }
 
-sendBtn.addEventListener('click', sendMessage);
-msgInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') sendMessage(); });
-
-
-// Mesajları Canlı Dinleme (Real-time Listener)
+// Mesajları Listeleme
 function loadMessages() {
     db.collection('messages')
-      .orderBy('timestamp', 'asc') // Eskiden yeniye sırala
+      .orderBy('timestamp', 'asc')
       .onSnapshot(snapshot => {
-          messagesFeed.innerHTML = ''; // Listeyi temizle
+          messagesFeed.innerHTML = '';
           const currentUser = auth.currentUser.uid;
 
           snapshot.forEach(doc => {
               const msg = doc.data();
               const div = document.createElement('div');
-              // Mesaj bana mı ait başkasına mı?
-              const type = (msg.uid === currentUser) ? 'sent' : 'received';
+              const typeClass = (msg.uid === currentUser) ? 'sent' : 'received';
               
-              // Zaman formatı
               let time = '...';
               if(msg.timestamp) {
                   const date = msg.timestamp.toDate();
                   time = date.getHours() + ':' + (date.getMinutes()<10?'0':'') + date.getMinutes();
               }
 
-              div.classList.add('message', type);
+              div.classList.add('message', typeClass);
+
+              // İÇERİK TİPİNE GÖRE GÖSTERİM
+              let innerContent = '';
+              if (msg.type === 'text') {
+                  innerContent = `<p>${msg.content}</p>`;
+              } else if (msg.type === 'image') {
+                  innerContent = `<img src="${msg.content}" style="max-width: 100%; border-radius: 10px;">`;
+              } else if (msg.type === 'video') {
+                  innerContent = `<video src="${msg.content}" controls style="max-width: 100%; border-radius: 10px;"></video>`;
+              }
+
               div.innerHTML = `
-                  <p>${msg.text}</p>
+                  ${innerContent}
                   <span class="msg-time">${time}</span>
               `;
               messagesFeed.appendChild(div);
           });
-          // En alta kaydır
           messagesFeed.scrollTop = messagesFeed.scrollHeight;
       });
 }
 
-// Butonları Aktif Hissettirme (Boş olanlar için)
+// Buton görselliği
 document.querySelectorAll('.server-icon').forEach(icon => {
     icon.addEventListener('click', function() {
         if(!this.classList.contains('logout-btn')) {
