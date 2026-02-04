@@ -22,7 +22,34 @@
         </div>
     </div>
 
-    <div id="app-container">
+    <section id="auth-container">
+        <div class="login-box">
+            <div class="logo">
+                <i class="fa-solid fa-shield-halved"></i>
+                <h1>PROTOCOL</h1>
+                <p>Güvenli Hat</p>
+            </div>
+            
+            <form id="login-form">
+                <div class="input-group">
+                    <i class="fa-solid fa-envelope"></i>
+                    <input type="email" id="email" placeholder="E-Posta" required>
+                </div>
+                <div class="input-group">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="password" placeholder="Şifre" required>
+                </div>
+                <button type="submit" id="login-btn">GİRİŞ YAP</button>
+            </form>
+
+            <div class="auth-footer">
+                <p>Hesabın yok mu? <span id="show-register">Kayıt Ol</span></p>
+                <p id="auth-error-msg" class="error-msg"></p>
+            </div>
+        </div>
+    </section>
+
+    <div id="app-container" class="hidden">
         
         <nav id="sidebar">
             <div class="server-icon active" title="Ana Sayfa"><i class="fa-solid fa-shield-halved"></i></div>
@@ -30,9 +57,8 @@
             <div class="server-icon" title="Operasyon 1">#1</div>
             <div class="server-icon" title="Haberleşme">#2</div>
             <div class="server-icon add-server" title="Yeni Oda Kur">+</div>
-            
             <div class="spacer"></div>
-            
+            <div class="server-icon logout-btn" id="logout-btn" title="Güvenli Çıkış"><i class="fa-solid fa-power-off"></i></div>
             <div class="server-icon settings-btn" title="Ayarlar"><i class="fa-solid fa-gear"></i></div>
         </nav>
 
@@ -41,28 +67,16 @@
                 <h2>Mesajlar</h2>
                 <i class="fa-solid fa-pen-to-square"></i>
             </div>
-            
             <div class="news-ticker">
                 <span>SYSTEM: Protokol V1 aktif. Bağlantı güvenli.</span>
             </div>
-
             <div class="chat-items">
                 <div class="chat-item active">
                     <div class="avatar"><i class="fa-solid fa-user-secret"></i></div>
                     <div class="chat-info">
                         <h4>#Operasyon1</h4>
-                        <p>Son mesaj: Konum doğrulandı...</p>
+                        <p>Son mesaj: Bağlantı kuruldu.</p>
                     </div>
-                    <span class="time">12:05</span>
-                </div>
-
-                <div class="chat-item">
-                    <div class="avatar" style="background-color: #d63031;">G</div>
-                    <div class="chat-info">
-                        <h4>Genel Sohbet</h4>
-                        <p>Ahmet: Dosyayı gönderdim.</p>
-                    </div>
-                    <span class="time">10:30</span>
                 </div>
             </div>
         </aside>
@@ -73,7 +87,7 @@
                     <i class="fa-solid fa-hashtag"></i>
                     <div class="chat-details">
                         <h3>Operasyon1</h3>
-                        <span>3 Çevrimiçi</span>
+                        <span id="user-status">Çevrimiçi</span>
                     </div>
                 </div>
                 <div class="header-right">
@@ -82,32 +96,27 @@
                 </div>
             </header>
 
-            <div class="messages-container">
+            <div class="messages-container" id="messages-feed">
                 <div class="message received">
-                    <p>Bölgeye intikal edildi mi?</p>
-                    <span class="msg-time">12:04</span>
-                </div>
-
-                <div class="message sent">
-                    <p>Evet, pozisyon alındı. Beklemedeyiz.</p>
-                    <span class="msg-time">12:05 <i class="fa-solid fa-check-double"></i></span>
-                </div>
-                
-                <div class="message sent flash-msg">
-                    <p><i class="fa-solid fa-fire"></i> Tek Gösterimlik Fotoğraf</p>
-                    <span class="msg-time">12:06</span>
+                    <p>Sistem: Hoş geldiniz.</p>
+                    <span class="msg-time">System</span>
                 </div>
             </div>
 
             <div class="input-area">
                 <button class="attach-btn"><i class="fa-solid fa-plus"></i></button>
-                <input type="text" placeholder="Mesaj yazın... (Güvenli Hat)">
+                <input type="text" id="msg-input" placeholder="Mesaj yazın... (Güvenli Hat)">
                 <button class="emoji-btn"><i class="fa-regular fa-face-smile"></i></button>
-                <button class="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+                <button class="send-btn" id="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
         </main>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <script src="firebase-config.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
