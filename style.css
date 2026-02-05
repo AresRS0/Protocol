@@ -1,200 +1,175 @@
+/* GENEL DEĞİŞKENLER */
 :root {
-    --bg-dark: #0a0a0a;         /* En koyu */
-    --bg-panel: #111111;        /* Paneller */
-    --bg-light: #1a1a1a;        /* Açık alanlar */
-    --accent: #00cec9;          /* Ana Vurgu Rengi (Değişebilir) */
-    --text-main: #eeeeee;
-    --text-dim: #888888;
-    --danger: #ff3b30;
-    --border: #333333;
-    --font-ui: 'Rajdhani', sans-serif;
-    --font-code: 'Roboto Mono', monospace;
+  --expedition-green: #1E3B2C;
+  --midnight-charcoal: #202225; /* Discord Dark */
+  --misty-gray: #b9bbbe;
+  --bioluminescent-teal: #39F0D9;
+  --evidence-amber: #FF9800;
+  
+  --bg-tertiary: #202225;
+  --bg-secondary: #2f3136;
+  --bg-primary: #36393f;
+  --brand: #5865F2;
+  
+  --font-heading: 'Rajdhani', sans-serif;
+  --font-body: 'Work Sans', sans-serif;
+  --font-mono: 'Space Mono', monospace;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: var(--font-ui); }
-
-body { background: var(--bg-dark); color: var(--text-main); height: 100vh; overflow: hidden; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background-color: var(--bg-primary); color: #fff; font-family: var(--font-body); height: 100vh; overflow: hidden; }
 .hidden { display: none !important; }
 
-/* GİRİŞ EKRANI */
-#auth-layer, #profile-layer {
-    position: fixed; width: 100%; height: 100%; background: #000;
-    display: flex; justify-content: center; align-items: center; z-index: 5000;
-    background-image: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+/* =========================================
+   BÖLÜM 1: AUTH LAYER (Cryptid Styles)
+   ========================================= */
+#auth-layer {
+    position: fixed; width: 100%; height: 100%; top:0; left:0;
+    z-index: 1000;
+    background: linear-gradient(135deg, #2D3033, #1E3B2C);
 }
 
-.auth-box {
-    width: 400px; padding: 40px; background: rgba(20, 20, 20, 0.9);
-    border: 1px solid var(--accent); box-shadow: 0 0 20px rgba(0, 206, 201, 0.2);
-    text-align: center;
+.background { position: absolute; width: 100%; height: 100%; z-index: -1; }
+.noise { 
+    position: absolute; width: 100%; height: 100%; opacity: 0.05; 
+    background: url('https://www.transparenttextures.com/patterns/stardust.png');
 }
 
-.cyber-header i { font-size: 50px; color: var(--accent); margin-bottom: 10px; }
-.cyber-header h1 { font-size: 32px; letter-spacing: 5px; margin-bottom: 30px; }
-.version { font-size: 12px; background: var(--accent); color: black; padding: 2px 5px; border-radius: 2px; }
-
-.input-wrapper {
-    background: #000; border: 1px solid #333; margin-bottom: 15px; display: flex; align-items: center; padding: 0 15px;
-}
-.input-wrapper i { color: var(--text-dim); }
-.input-wrapper input {
-    background: transparent; border: none; color: white; width: 100%; padding: 15px; outline: none; font-family: var(--font-code);
+.container {
+    max-width: 500px; margin: 5vh auto; padding: 20px;
+    display: flex; flex-direction: column; align-items: center;
 }
 
-button {
-    width: 100%; padding: 15px; background: var(--accent); border: none; font-weight: bold; cursor: pointer; letter-spacing: 2px; transition: 0.3s;
-}
-button:hover { background: white; color: black; box-shadow: 0 0 15px white; }
+header { width: 100%; display: flex; justify-content: space-between; margin-bottom: 20px; }
+.logo-text { font-family: var(--font-heading); font-size: 24px; font-weight: bold; letter-spacing: 2px; }
+.coordinates { font-family: var(--font-mono); font-size: 10px; color: var(--bioluminescent-teal); }
 
-.divider { margin: 20px 0; border-top: 1px solid #333; position: relative; }
-.divider span { position: absolute; top: -10px; left: 45%; background: #141414; padding: 0 10px; font-size: 12px; color: #555; }
-
-#google-btn { background: #fff; color: #000; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-.auth-footer { margin-top: 20px; font-size: 14px; color: #666; }
-.auth-footer span { color: var(--accent); cursor: pointer; text-decoration: underline; }
-
-/* PROFİL YÜKLEME */
-.avatar-upload {
-    width: 100px; height: 100px; margin: 0 auto 20px; border: 2px dashed var(--accent); border-radius: 50%; position: relative; cursor: pointer; overflow: hidden;
-}
-.avatar-upload img { width: 100%; height: 100%; object-fit: cover; }
-.overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; opacity: 0; }
-.avatar-upload:hover .overlay { opacity: 1; }
-
-/* ANA ARAYÜZ YAPISI */
-#app-layer { display: flex; width: 100%; height: 100%; }
-
-/* 1. SERVER BAR (Sol) */
-.server-nav {
-    width: 70px; background: #050505; border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding-top: 15px;
-}
-.server-icon {
-    width: 48px; height: 48px; background: #222; border-radius: 50%; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; cursor: pointer; color: #888; transition: 0.3s;
-}
-.server-icon:hover, .server-icon.active { border-radius: 12px; background: var(--accent); color: black; }
-.server-icon.home { background: #111; color: var(--accent); }
-.server-icon.add { color: var(--accent); border: 1px solid var(--accent); background: transparent; }
-.server-icon.add:hover { background: var(--accent); color: black; }
-.sep { width: 30px; height: 2px; background: #333; margin-bottom: 10px; }
-
-/* 2. SIDEBAR (Kanal & Kullanıcı) */
-.sidebar {
-    width: 240px; background: var(--bg-panel); display: flex; flex-direction: column; border-right: 1px solid var(--border);
-}
-.sidebar-header {
-    height: 50px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; font-weight: bold; letter-spacing: 1px;
-}
-.channel-list { flex: 1; padding: 15px; overflow-y: auto; }
-.category { font-size: 10px; color: #555; margin-bottom: 5px; margin-top: 15px; font-weight: bold; }
-.channel {
-    padding: 8px; color: #888; cursor: pointer; display: flex; align-items: center; gap: 8px; font-family: var(--font-code); font-size: 13px;
-}
-.channel:hover { background: #1a1a1a; color: #ddd; }
-.channel.active { background: rgba(0, 206, 201, 0.1); color: var(--accent); border-right: 2px solid var(--accent); }
-
-/* KULLANICI PANELİ */
-.user-panel {
-    height: 60px; background: #080808; display: flex; align-items: center; padding: 0 10px; border-top: 1px solid var(--border);
-}
-.user-info { display: flex; align-items: center; gap: 10px; flex: 1; }
-#user-panel-avatar { width: 35px; height: 35px; border-radius: 50%; border: 2px solid #222; }
-.user-text { line-height: 1.2; }
-#user-panel-name { font-weight: bold; font-size: 14px; }
-.user-id { font-size: 10px; color: #555; }
-.user-controls i { padding: 8px; color: #888; cursor: pointer; transition: 0.3s; }
-.user-controls i:hover { color: var(--accent); transform: rotate(90deg); }
-
-/* 3. CHAT MAIN */
-.chat-main { flex: 1; display: flex; flex-direction: column; background: var(--bg-light); }
-.chat-header {
-    height: 50px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
-}
-.header-info { display: flex; align-items: center; gap: 10px; }
-.secure-badge { font-size: 10px; background: #222; padding: 2px 6px; border-radius: 4px; color: var(--accent); border: 1px solid var(--accent); }
-.header-actions i { margin-left: 15px; cursor: pointer; color: #666; font-size: 18px; }
-.header-actions i:hover { color: var(--accent); }
-
-.messages-area {
-    flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px;
-    background-image: radial-gradient(#222 1px, transparent 1px); background-size: 30px 30px;
-}
-.message { display: flex; gap: 15px; padding-right: 20px; }
-.msg-avatar { width: 40px; height: 40px; border-radius: 5px; object-fit: cover; }
-.msg-content h4 { font-size: 14px; margin-bottom: 2px; }
-.msg-date { font-size: 10px; color: #555; margin-left: 10px; font-weight: normal; }
-.msg-bubble { 
-    background: transparent; color: #ddd; font-size: 15px; line-height: 1.5; 
-}
-.msg-image { max-width: 300px; border-radius: 5px; border: 1px solid #333; margin-top: 5px; cursor: pointer; }
-.msg-file { 
-    background: #111; padding: 10px; border: 1px solid #333; display: inline-flex; align-items: center; gap: 10px; color: var(--accent); text-decoration: none; margin-top: 5px; font-family: var(--font-code); font-size: 12px;
+.glass-panel {
+    background: rgba(30, 30, 30, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(57, 240, 217, 0.2);
+    padding: 40px; border-radius: 8px; width: 100%;
+    box-shadow: 0 0 30px rgba(57, 240, 217, 0.1);
+    position: relative;
+    overflow: hidden;
 }
 
-.input-zone { padding: 20px; background: var(--bg-light); }
-.input-wrapper {
-    background: #111; border: 1px solid #333; border-radius: 5px; display: flex; align-items: center; padding: 0 10px;
+.scanner-line {
+    position: absolute; top:0; left:0; width: 100%; height: 2px;
+    background: var(--bioluminescent-teal);
+    animation: scan 3s infinite linear;
+    opacity: 0.5;
 }
-.input-wrapper input {
-    flex: 1; background: transparent; border: none; color: white; padding: 15px; outline: none;
+@keyframes scan { 0% {top:0} 100% {top:100%} }
+
+h1 { font-family: var(--font-heading); font-size: 28px; margin-bottom: 5px; text-transform: uppercase; }
+.classified-stripe { 
+    background: var(--evidence-amber); color: black; 
+    font-size: 10px; font-weight: bold; padding: 2px 8px; display: inline-block; margin-bottom: 20px;
 }
-.input-wrapper button { width: auto; background: transparent; color: #666; padding: 0 10px; }
-.input-wrapper button:hover { color: var(--accent); background: transparent; box-shadow: none; }
 
-/* SAĞ SIDEBAR (Members) */
-.members-sidebar { width: 220px; background: var(--bg-panel); border-left: 1px solid var(--border); padding: 20px 10px; }
-.member-item { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 5px; cursor: pointer; }
-.member-item:hover { background: #1a1a1a; }
-.member-item img { width: 32px; height: 32px; border-radius: 50%; }
-.status-text { font-size: 10px; color: var(--accent); }
+.form-group { margin-bottom: 20px; }
+label { display: block; font-size: 10px; color: var(--misty-gray); margin-bottom: 5px; font-family: var(--font-mono); }
+.input-container { 
+    background: rgba(0,0,0,0.3); border: 1px solid #444; 
+    display: flex; align-items: center; padding: 0 10px; 
+}
+.input-container input {
+    background: transparent; border: none; color: white; width: 100%; padding: 12px; outline: none; font-family: var(--font-mono);
+}
+.input-prefix { color: var(--bioluminescent-teal); margin-right: 5px; }
 
-/* MODALLAR */
+.btn-primary {
+    width: 100%; background: rgba(57, 240, 217, 0.15);
+    border: 1px solid var(--bioluminescent-teal);
+    color: var(--bioluminescent-teal);
+    padding: 15px; font-weight: bold; cursor: pointer;
+    font-family: var(--font-heading); letter-spacing: 1px;
+    transition: 0.3s; margin-top: 10px;
+}
+.btn-primary:hover { background: var(--bioluminescent-teal); color: black; box-shadow: 0 0 15px var(--bioluminescent-teal); }
+
+/* Google Button Specifics */
+.google-auth-btn {
+    width: 100%; background: white; color: black; border: none;
+    padding: 12px; font-weight: bold; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    margin-bottom: 15px; font-family: var(--font-heading);
+}
+.google-auth-btn:hover { background: #eee; }
+
+.form-footer { margin-top: 20px; text-align: center; font-size: 12px; color: #888; }
+.accent-link { color: var(--bioluminescent-teal); text-decoration: none; }
+
+/* Aptitude Test Styles */
+.aptitude-test-container {
+    position: fixed; top:0; left:0; width:100%; height:100%;
+    background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 2000;
+}
+.aptitude-panel { max-width: 400px; text-align: center; }
+.pattern-sequence { font-size: 30px; margin: 20px 0; letter-spacing: 10px; }
+.pattern-options { display: flex; justify-content: center; gap: 20px; }
+.pattern-option { 
+    background: #333; padding: 15px; cursor: pointer; border: 1px solid #555; font-size: 24px;
+}
+.pattern-option:hover { border-color: var(--bioluminescent-teal); }
+
+/* =========================================
+   BÖLÜM 2: APP LAYER (Discord Styles)
+   ========================================= */
+#app-layer { display: flex; height: 100vh; width: 100vw; }
+
+.guilds-nav { 
+    width: 72px; background: var(--bg-tertiary); display: flex; flex-direction: column; align-items: center; padding-top: 12px; 
+}
+.guild-icon {
+    width: 48px; height: 48px; border-radius: 50%; background: #36393f; 
+    margin-bottom: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center;
+    transition: 0.2s; color: var(--misty-gray);
+}
+.guild-icon:hover, .guild-icon.active { border-radius: 16px; background: var(--brand); color: white; }
+.add-guild-btn { color: #3ba55c; } .add-guild-btn:hover { background: #3ba55c; color: white; }
+
+.sidebar { width: 240px; background: var(--bg-secondary); display: flex; flex-direction: column; }
+.server-header { height: 48px; padding: 12px 16px; box-shadow: 0 1px 0 rgba(4,4,5,0.2); font-weight: bold; }
+.channels-scroller { flex: 1; padding: 10px; }
+.category-name { font-size: 11px; color: #8e9297; font-weight: bold; margin-bottom: 5px; }
+.channel { padding: 6px 8px; color: #8e9297; cursor: pointer; border-radius: 4px; margin-bottom: 2px; }
+.channel:hover { background: rgba(79,84,92,0.16); color: #dcddde; }
+.channel.active { background: rgba(79,84,92,0.32); color: white; }
+
+.user-panel { 
+    background: #292b2f; height: 52px; display: flex; align-items: center; padding: 0 8px; 
+}
+.user-avatar-wrapper { position: relative; margin-right: 8px; }
+#user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #555; }
+.status-indicator { width: 10px; height: 10px; background: #3ba55c; border-radius: 50%; position: absolute; bottom: -2px; right: -2px; border: 2px solid #292b2f; }
+.username { font-weight: bold; font-size: 14px; }
+.discriminator { font-size: 12px; color: #b9bbbe; }
+.user-actions i { cursor: pointer; color: #b9bbbe; margin-left: auto; }
+
+.chat-area { flex: 1; background: var(--bg-primary); display: flex; flex-direction: column; }
+.chat-header { height: 48px; padding: 0 16px; display: flex; align-items: center; box-shadow: 0 1px 0 rgba(4,4,5,0.06); }
+.header-left { display: flex; align-items: center; gap: 10px; font-weight: bold; }
+
+.messages-wrapper { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+.message { display: flex; gap: 15px; }
+.msg-avatar { width: 40px; height: 40px; border-radius: 50%; background: #555; }
+.msg-content h4 { font-size: 15px; margin-bottom: 5px; }
+.msg-timestamp { font-size: 11px; color: #72767d; margin-left: 5px; font-weight: normal; }
+.msg-text { color: #dcddde; line-height: 1.4; }
+.msg-image { max-width: 300px; border-radius: 5px; margin-top: 5px; }
+
+.chat-input-area { padding: 0 16px 24px; }
+.input-wrapper { background: #40444b; border-radius: 8px; display: flex; padding: 0 15px; height: 44px; align-items: center; }
+.attach-btn { background: none; border: none; color: #b9bbbe; cursor: pointer; font-size: 20px; margin-right: 15px; }
+#msg-input { background: transparent; border: none; color: white; flex: 1; outline: none; }
+
+/* Modal Backdrop */
 .modal-backdrop {
-    position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); z-index: 6000;
-    display: flex; justify-content: center; align-items: center;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 5000;
 }
-.modal-box {
-    background: #111; border: 1px solid #333; width: 450px; padding: 0;
-}
-.modal-header { padding: 20px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; }
-.modal-body { padding: 20px; }
-.tab-group { display: flex; margin-bottom: 20px; border-bottom: 1px solid #333; }
-.tab-btn { background: transparent; color: #666; border-radius: 0; }
-.tab-btn.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
-.action-btn { margin-top: 10px; }
-
-/* AYARLAR MODALI (Full Screen) */
-.settings-container {
-    width: 800px; height: 500px; background: #111; display: flex; border: 1px solid #333; box-shadow: 0 0 50px rgba(0,0,0,0.5);
-}
-.settings-sidebar { width: 200px; background: #080808; padding: 20px; }
-.settings-sidebar ul { list-style: none; margin-top: 20px; }
-.settings-sidebar li { padding: 10px; cursor: pointer; color: #888; font-size: 14px; border-radius: 4px; margin-bottom: 5px; }
-.settings-sidebar li:hover, .settings-sidebar li.active { background: #1a1a1a; color: white; }
-.settings-sidebar li.danger-zone { color: var(--danger); margin-top: 50px; }
-.settings-sidebar li.danger-zone:hover { background: var(--danger); color: white; }
-
-.settings-content { flex: 1; padding: 40px; overflow-y: auto; }
-.profile-card {
-    background: #1a1a1a; border-radius: 8px; overflow: hidden; margin-top: 20px;
-}
-.profile-header { height: 60px; width: 100%; }
-.profile-info { padding: 15px; display: flex; align-items: center; justify-content: space-between; margin-top: -30px; }
-#settings-avatar { width: 70px; height: 70px; border-radius: 50%; border: 4px solid #1a1a1a; }
-.profile-details { margin-left: 15px; flex: 1; margin-top: 20px; }
-.edit-btn { width: auto; padding: 5px 15px; font-size: 12px; margin-top: 20px; }
-
-.theme-grid { display: flex; gap: 15px; margin-top: 15px; }
-.theme-dot { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
-.theme-dot:hover { border-color: white; }
-
-.danger-box { border: 1px solid var(--danger); padding: 15px; margin-top: 10px; border-radius: 5px; }
-#panic-btn { background: var(--danger); color: white; width: auto; padding: 5px 15px; margin-top: 10px; }
-.close-settings-btn { margin-top: 30px; background: transparent; border: 1px solid #555; color: #aaa; width: auto; padding: 10px 30px; float: right; }
-
-/* HESAP MAKİNESİ (Gizli) */
-#calculator-overlay { z-index: 9999; background: #000; position: fixed; top:0; left:0; width:100%; height:100%; display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 30px; }
-.calc-top-bar { height: 100px; width: 100%; cursor: pointer; } /* Görünmez çıkış alanı */
-.calc-screen { color: white; font-size: 70px; text-align: right; padding: 20px; font-weight: 300; }
-.calc-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; padding: 15px; max-width: 400px; margin: 0 auto; }
-.calc-btn { width: 70px; height: 70px; border-radius: 50%; border:none; font-size: 28px; color:white; display:flex; justify-content:center; align-items:center; cursor: pointer; }
-.btn-gray { background: #333; color: white; } .btn-dark { background: #1a1a1a; } .btn-orange { background: #ff9f0a; } .btn-zero { grid-column: span 2; width: 100%; border-radius: 40px; justify-content: flex-start; padding-left: 25px; }
+.modal-box { background: #36393f; padding: 20px; border-radius: 5px; width: 300px; }
+.modal-footer { margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px; }
+.back-btn { background: transparent; color: white; border: none; cursor: pointer; }

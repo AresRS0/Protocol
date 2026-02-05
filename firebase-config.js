@@ -1,4 +1,4 @@
-// PROTOCOL V1 - FIREBASE AYARLARI
+// PROTOCOL FIREBASE CONFIG
 const firebaseConfig = {
     apiKey: "AIzaSyAQxv2-4XG4K0kVm5ITFcbDkpxqts4yAz4",
     authDomain: "protocol-e7e7c.firebaseapp.com",
@@ -8,13 +8,10 @@ const firebaseConfig = {
     appId: "1:594400924109:web:23ae7037855c7fcd2eb484",
     measurementId: "G-Y8BRBYLQJM"
 };
-  
+
 // Firebase'i Başlat
 firebase.initializeApp(firebaseConfig);
-
-// Auth ve Database Servislerini Başlat
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// Bağlantı Kontrolü (Konsola yazar)
-console.log("PROTOCOL: Güvenli Hat Bağlantısı (Firebase) Aktif.");
+console.log("SYSTEM: Secure Connection Established via Firebase.");
