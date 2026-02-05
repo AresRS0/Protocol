@@ -1332,9 +1332,11 @@ input:focus {
 
 /* Footer */
 footer {
-  margin-top: 0;
-  padding: 1rem 0;
+  margin-top: -25px; /* Yazıyı yukarı iter */
+  padding: 0.5rem 0; /* Alt/üst boşluğu azalttık */
   text-align: center;
+  position: relative;
+  z-index: 10; /* Diğer elementlerin altında kalmasın */
 }
 
 .disclaimer {
