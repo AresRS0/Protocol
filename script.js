@@ -1257,7 +1257,11 @@ function completeRegistration() {
   successNotification.className = 'auth-notification success';
   successNotification.textContent = 'FIELD RESEARCHER PROFILE INITIALIZED';
   document.body.appendChild(successNotification);
-  
+  setTimeout(() => {
+      if (successNotification && successNotification.parentNode) {
+          successNotification.remove();
+      }
+  }, 4000);
   console.log("Registration complete, returning to login");
   
   // Close aptitude test container
