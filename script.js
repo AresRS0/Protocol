@@ -2696,3 +2696,257 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+// =================================================================
+// PROTOCOL V3 - BACKEND SYSTEM (DATABASE & AUTH)
+// =================================================================
+
+// 1. Firebase Config
+const firebaseConfig = {
+    apiKey: "AIzaSyAQxv2-4XG4K0kVm5ITFcbDkpxqts4yAz4",
+    authDomain: "protocol-e7e7c.firebaseapp.com",
+    projectId: "protocol-e7e7c",
+    storageBucket: "protocol-e7e7c.firebasestorage.app",
+    messagingSenderId: "594400924109",
+    appId: "1:594400924109:web:23ae7037855c7fcd2eb484",
+    measurementId: "G-Y8BRBYLQJM"
+};
+
+// 2. Initialize
+if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// 3. ŞİFRE VALIDASYON FONKSİYONU
+function validatePassword(password) {
+    // En az 8 karakter, 1 Büyük harf, 1 Sayı, 1 Özel Karakter
+    const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.])[A-Za-z\d@$!%*?&.]{8,}$/;
+    return regex.test(password);
+}
+
+// 4. DOM Yüklenince Çalışacak Kodlar
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // --- A) KAYIT OLMA (REGISTER) İŞLEMİ ---
+    const registerForm = document.getElementById('register-form');
+    if(registerForm) {
+        // Eski event listenerları temizlemek için klonluyoruz
+        const newRegisterForm = registerForm.cloneNode(true);
+        registerForm.parentNode.replaceChild(newRegisterForm, registerForm);
+        
+        newRegisterForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('new-researcher-name').value.trim();
+            const fullname = document.getElementById('full-name').value.trim();
+            const email = document.getElementById('new-researcher-id').value.trim();
+            const password = document.getElementById('clearance-code-new').value;
+            const protocolAccepted = document.querySelector('input[name="protocol-accepted"]').value === "true";
+
+            // Validasyonlar
+            if(!protocolAccepted) {
+                alert("HATA: Sözleşmeyi onaylamanız gerekmektedir.");
+                return;
+            }
+            if(!validatePassword(password)) {
+                alert("GÜVENLİK HATASI: Şifre en az 8 karakter olmalı, büyük harf, sayı ve sembol içermelidir.");
+                return;
+            }
+
+            const btn = newRegisterForm.querySelector('button');
+            const originalBtnText = btn.innerHTML;
+            btn.innerHTML = "İŞLENİYOR...";
+            btn.disabled = true;
+
+            try {
+                // 1. Kullanıcı adının benzersiz olup olmadığını kontrol et
+                const userSnapshot = await db.collection('users').where('username', '==', username).get();
+                if (!userSnapshot.empty) {
+                    throw new Error("Bu Kullanıcı Adı zaten kullanımda.");
+                }
+
+                // 2. Firebase Auth ile kullanıcı oluştur
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+
+                // 3. Profil güncelle
+                await user.updateProfile({ displayName: username });
+
+                // 4. Firestore'a kullanıcı detaylarını kaydet (Durum: PENDING)
+                await db.collection('users').doc(user.uid).set({
+                    username: username,
+                    fullname: fullname,
+                    email: email,
+                    role: 'user', // user | admin
+                    status: 'pending', // pending | approved | rejected
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                alert("BAŞARILI: Katılım talebiniz alındı. Yönetici onayı bekleniyor.");
+                
+                // Onaylanmadığı için çıkış yap
+                await auth.signOut();
+                
+                // Giriş ekranına yönlendir
+                document.getElementById('show-login').click();
+
+            } catch (error) {
+                console.error(error);
+                alert("KAYIT HATASI: " + error.message);
+            } finally {
+                btn.innerHTML = originalBtnText;
+                btn.disabled = false;
+            }
+        });
+    }
+
+    // --- B) GİRİŞ YAPMA (LOGIN) İŞLEMİ ---
+    const loginForm = document.getElementById('sign-in-form');
+    if(loginForm) {
+        const newLoginForm = loginForm.cloneNode(true);
+        loginForm.parentNode.replaceChild(newLoginForm, loginForm);
+
+        newLoginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const inputId = document.getElementById('researcher-id').value.trim(); // Mail veya Kullanıcı Adı
+            const password = document.getElementById('clearance-code').value;
+            
+            const btn = newLoginForm.querySelector('#authenticate-btn');
+            const originalBtnText = btn.innerHTML;
+            btn.innerHTML = "DOĞRULANIYOR...";
+            
+            try {
+                let emailToLogin = inputId;
+
+                // Eğer girilen değer bir email değilse (Kullanıcı Adı ise), emailini bul
+                if (!inputId.includes('@')) {
+                    const userSnapshot = await db.collection('users').where('username', '==', inputId).get();
+                    if (userSnapshot.empty) {
+                        throw new Error("Kullanıcı bulunamadı.");
+                    }
+                    emailToLogin = userSnapshot.docs[0].data().email;
+                }
+
+                // Giriş Yap
+                const userCredential = await auth.signInWithEmailAndPassword(emailToLogin, password);
+                const user = userCredential.user;
+
+                // Onay Durumunu Kontrol Et
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    if (userData.status === 'pending') {
+                        await auth.signOut();
+                        throw new Error("Hesabınız henüz yönetici onayı almamıştır.");
+                    } else if (userData.status === 'rejected') {
+                        await auth.signOut();
+                        throw new Error("Katılım talebiniz reddedilmiştir.");
+                    }
+                    // status === 'approved' ise devam et
+                }
+
+                // Başarılı Giriş
+                alert("DOĞRULAMA BAŞARILI: Hoşgeldin Ajan " + (user.displayName || user.email));
+                // Burada dashboard'a yönlendireceğiz
+
+            } catch (error) {
+                console.error(error);
+                alert("GİRİŞ HATASI: " + error.message);
+                
+                // Formu salla
+                const panel = document.querySelector('.glass-panel');
+                if(panel) { panel.classList.add('shake'); setTimeout(() => panel.classList.remove('shake'), 500); }
+            } finally {
+                btn.innerHTML = originalBtnText;
+            }
+        });
+    }
+
+    // --- C) GOOGLE GİRİŞ İŞLEMİ ---
+    const googleBtn = document.getElementById('google-login-btn');
+    if (googleBtn) {
+        googleBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                const result = await auth.signInWithPopup(provider);
+                const user = result.user;
+
+                // Veritabanında var mı kontrol et
+                const userDocRef = db.collection('users').doc(user.uid);
+                const userDoc = await userDocRef.get();
+
+                if (!userDoc.exists) {
+                    // İlk defa giriyorsa kaydet (PENDING olarak)
+                    await userDocRef.set({
+                        username: user.displayName.replace(/\s/g, '').toLowerCase(), // Boşluksuz kullanıcı adı tahmini
+                        fullname: user.displayName,
+                        email: user.email,
+                        role: 'user',
+                        status: 'pending',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    alert("Google hesabı bağlandı. Yönetici onayı bekleniyor.");
+                    await auth.signOut();
+                } else {
+                    // Kayıtlıysa durumunu kontrol et
+                    const userData = userDoc.data();
+                    if (userData.status !== 'approved') {
+                        await auth.signOut();
+                        alert("Hesabınız onay sürecindedir.");
+                    } else {
+                        alert("Giriş Başarılı!");
+                    }
+                }
+            } catch (error) {
+                alert("Google Hata: " + error.message);
+            }
+        });
+    }
+
+    // --- D) ŞİFREMİ UNUTTUM İŞLEMLERİ ---
+    const forgotLink = document.getElementById('forgot-password-link');
+    const resetPanel = document.getElementById('reset-password-panel');
+    const cancelReset = document.getElementById('cancel-reset-btn');
+    const sendReset = document.getElementById('send-reset-btn');
+
+    if(forgotLink && resetPanel) {
+        forgotLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            resetPanel.classList.remove('hidden');
+        });
+
+        cancelReset.addEventListener('click', () => {
+            resetPanel.classList.add('hidden');
+        });
+
+        sendReset.addEventListener('click', async () => {
+            const email = document.getElementById('reset-email').value;
+            if(!email) { alert("Lütfen e-posta adresinizi girin."); return; }
+            
+            sendReset.innerHTML = "GÖNDERİLİYOR...";
+            try {
+                await auth.sendPasswordResetEmail(email);
+                alert("Doğrulama bağlantısı e-posta adresinize gönderildi. Lütfen gelen kutunuzu kontrol edin.");
+                resetPanel.classList.add('hidden');
+            } catch(error) {
+                alert("Hata: " + error.message);
+            } finally {
+                sendReset.innerHTML = "DOĞRULAMA KODU GÖNDER";
+            }
+        });
+    }
+    
+    // Custom Toggle Logic (Checkbox için)
+    const toggleContainers = document.querySelectorAll('.custom-toggle-container');
+    toggleContainers.forEach(container => {
+        container.addEventListener('click', () => {
+            const toggle = container.querySelector('.custom-toggle');
+            const input = container.querySelector('input[type="hidden"]');
+            toggle.classList.toggle('checked');
+            if(input) input.value = toggle.classList.contains('checked') ? "true" : "false";
+        });
+    });
+});

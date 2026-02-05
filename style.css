@@ -2693,3 +2693,29 @@ html.total-breach .google-uplink-btn {
 html.total-breach .google-uplink-btn:hover {
   box-shadow: 0 0 15px rgba(244, 67, 54, 0.4) !important;
 }
+/* --- INPUT AUTOFILL FIX (BEYAZ EKRAN SORUNU ÇÖZÜMÜ) --- */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active{
+    -webkit-box-shadow: 0 0 0 30px rgba(45, 48, 51, 0.8) inset !important;
+    -webkit-text-fill-color: var(--bioluminescent-teal) !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Şifremi Unuttum Paneli Stili */
+.reset-password-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(30, 35, 40, 0.95);
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    backdrop-filter: blur(10px);
+}
