@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PROTOCOL | Secure Uplink</title>
+  <title>Cryptid Collective | Field Researcher Authentication</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,136 +23,142 @@
       
       <div class="container">
         <header>
-          <div class="logo-text">PROTOCOL <span style="color:var(--bioluminescent-teal)">V3</span></div>
+          <svg class="logo" viewBox="0 0 100 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="height: 40px;">
+             <text x="0" y="15" fill="#39F0D9" font-family="Rajdhani" font-weight="bold" font-size="18" letter-spacing="2">CRYPTID COLLECTIVE</text>
+          </svg>
+          
           <div class="coordinates">
             <span id="coordinates">47°10′N 52°44′W</span>
-            <span id="timestamp">INITIALIZING...</span>
+            <span id="timestamp">2023-11-07 20:15:33 UTC</span>
           </div>
         </header>
 
         <main class="glass-panel">
           <div class="lockout-message">SECURITY PROTOCOL ACTIVATED<span>Please reload page to continue</span></div>
           
-          <div class="classified-stamp">CLEARANCE REQUIRED</div>
+          <div class="classified-stamp">Level 3 Clearance</div>
+          <div class="morse-code">... . -.-. ..- .-. .. - -.--  .--. .-. --- - --- -.-. --- .-..</div>
           <div class="hidden-cryptid"></div>
-          <div class="scanner-line"></div>
+          <div class="security-grid"></div>
+          <div class="binary-code">01010011 01000101 01000011 01010101 01010010 01000101</div>
+          <div class="scan-animation"></div>
           
           <div class="form-container" id="sign-in-container">
-            <h1 data-text="Researcher Authentication">Researcher Authentication</h1>
-            <div class="classified-stripe">SECURE TERMINAL</div>
+            <h1 data-text="Field Researcher Authentication">Field Researcher Authentication</h1>
+            <div class="classified-stripe">
+              CLEARANCE REQUIRED
+            </div>
             
             <form id="sign-in-form">
               <div class="form-group">
-                <label>PERSONNEL ID (EMAIL)</label>
+                <label for="researcher-id">Researcher ID</label>
                 <div class="input-container">
-                  <span class="input-prefix">></span>
-                  <input type="email" id="email" required>
+                  <input type="email" id="researcher-id" required>
+                  <div class="input-glow"></div>
                 </div>
               </div>
               
               <div class="form-group">
-                <label>ACCESS CODE (PASSWORD)</label>
+                <label for="clearance-code">Clearance Code</label>
                 <div class="input-container">
-                  <span class="input-prefix">#</span>
-                  <input type="password" id="password" required>
+                  <input type="password" id="clearance-code" required>
+                  <div class="input-glow"></div>
                 </div>
               </div>
               
-              <button type="button" id="google-btn" class="google-auth-btn">
-                <i class="fa-brands fa-google"></i> LINK WITH GOOGLE ID
-              </button>
+              <div class="form-group">
+                  <button type="button" class="btn-secondary google-uplink" id="google-btn" style="margin-top:10px; width:100%; background:rgba(255,255,255,0.1); color:#fff; border:1px solid rgba(255,255,255,0.2); padding:10px; cursor:pointer; font-family:'Rajdhani'; letter-spacing:1px;">
+                    <i class="fa-brands fa-google"></i> ESTABLISH GOOGLE UPLINK
+                  </button>
+              </div>
 
               <div class="form-options">
-                <div class="custom-toggle-container">
-                  <div class="custom-toggle"></div>
-                  <span>Stealth Mode</span>
+                <div class="custom-toggle-container" id="stealth-login-container">
+                  <div class="custom-toggle" id="stealth-login-toggle"></div>
+                  <input type="hidden" name="stealth-login" value="false">
+                  <span>Enable Stealth Login</span>
                 </div>
+                <a href="#" class="accent-link">Access Code Recovery</a>
               </div>
               
-              <button type="submit" class="btn-primary" id="login-btn">
+              <button type="submit" class="btn-primary" id="authenticate-btn">
                 AUTHENTICATE
-                <div class="btn-glow"></div>
+                <span class="btn-glow"></span>
+                <div class="security-indicators">
+                  <div class="indicator"></div>
+                  <div class="indicator"></div>
+                  <div class="indicator"></div>
+                </div>
               </button>
               
               <div class="form-footer">
-                <p>New assignment? <a href="#" id="show-register" class="accent-link">Request Clearance</a></p>
+                <p>No field credentials? <a href="#" id="show-register" class="accent-link">Request Access</a></p>
               </div>
             </form>
           </div>
           
           <div class="form-container hidden" id="register-container">
-            <h1 data-text="New Personnel Onboarding">New Personnel Onboarding</h1>
-            <div class="classified-stripe">REGISTRATION</div>
+            <h1 data-text="Field Researcher Onboarding">Field Researcher Onboarding</h1>
+            <div class="classified-stripe">NEW PERSONNEL REGISTRATION</div>
             
             <form id="register-form">
               <div class="form-group">
-                <label>OPERATIVE NAME</label>
+                <label for="new-researcher-name">Operative Name</label>
                 <div class="input-container">
-                  <input type="text" id="reg-name" placeholder="Code Name" required>
+                  <span class="input-prefix">&gt;</span>
+                  <input type="text" id="new-researcher-name" placeholder="SURNAME, Given Names" required>
+                  <div class="input-glow"></div>
                 </div>
               </div>
               
               <div class="form-group">
-                <label>CONTACT UPLINK</label>
+                <label for="new-researcher-id">Field Contact</label>
                 <div class="input-container">
-                  <input type="email" id="reg-email" placeholder="Secure Email" required>
+                  <span class="input-prefix">#</span>
+                  <input type="email" id="new-researcher-id" placeholder="secure email required" required>
+                  <div class="input-glow"></div>
                 </div>
               </div>
 
               <div class="form-group">
-                <label>SET PASSCODE</label>
+                <label for="clearance-code-new">Create Clearance Code</label>
                 <div class="input-container">
-                  <input type="password" id="reg-pass" placeholder="Min 6 Chars" required>
+                  <span class="input-prefix secure">#</span>
+                  <input type="password" id="clearance-code-new" placeholder="MIN 8 CHARS" required>
+                  <div class="input-glow"></div>
+                </div>
+              </div>
+
+              <div class="protocol-acceptance">
+                <div class="custom-toggle-container" id="protocol-checkbox-container">
+                  <div class="custom-toggle" id="protocol-checkbox-toggle"></div>
+                  <input type="hidden" name="protocol-accepted" value="false">
+                  <span>I acknowledge the <span class="accent-text">Cryptid Collective Field Protocol</span></span>
                 </div>
               </div>
               
               <button type="submit" class="btn-primary">
-                INITIALIZE TESTS
-                <div class="btn-glow"></div>
+                <span class="btn-text">INITIALIZE CLEARANCE</span>
+                <span class="btn-glow"></span>
               </button>
               
               <div class="form-footer">
-                <p>Have credentials? <a href="#" id="show-login" class="accent-link">Return to Login</a></p>
+                <p>Already have access? <a href="#" id="show-login" class="accent-link">AUTHENTICATE</a></p>
               </div>
             </form>
           </div>
         </main>
+        
+        <footer>
+          <p class="disclaimer">CRYPTID COLLECTIVE · CONFIDENTIAL · FOR APPROVED RESEARCHERS ONLY</p>
+        </footer>
       </div>
       
-      <div class="aptitude-test-container hidden">
-        <div class="glass-panel aptitude-panel">
-          <div class="test-header">
-            <h2>APTITUDE EVALUATION</h2>
-            <div class="progress-bar"><div class="progress-fill"></div></div>
-          </div>
-          
-          <div class="test-section active" data-test="1">
-            <h3>PATTERN RECOGNITION</h3>
-            <p class="test-instruction">Select the matching signal.</p>
-            <div class="pattern-sequence">
-               <span>⚠️</span> <span>⚡</span> <span>⚠️</span> <span>?</span>
-            </div>
-            <div class="pattern-options">
-              <div class="pattern-option">☢️</div>
-              <div class="pattern-option correct">⚡</div>
-              <div class="pattern-option">❄️</div>
-            </div>
-          </div>
-
-          <div class="test-section" data-test="results">
-            <div class="results-panel">
-              <div class="result-icon">✓</div>
-              <h4>CLEARANCE GRANTED</h4>
-              <p>Creating profile on secure server...</p>
-            </div>
-          </div>
-        </div>
-      </div>
-  </div>
-
-  <div id="app-layer" class="hidden">
+      <div class="thermal-cursor"></div>
+  </div> 
+  <div id="app-layer" class="hidden" style="display:none; height:100vh; width:100vw; background:#36393f;">
       <nav class="guilds-nav">
-          <div class="guild-icon active" id="home-btn" title="Home"><i class="fa-solid fa-shield-halved"></i></div>
+          <div class="guild-icon active" id="home-btn"><i class="fa-solid fa-shield-halved"></i></div>
           <div class="guild-separator"></div>
           <div id="server-list"></div>
           <div class="guild-icon add-guild-btn" id="add-server-btn"><i class="fa-solid fa-plus"></i></div>
@@ -167,7 +173,6 @@
               <div class="channel active"><i class="fa-solid fa-hashtag"></i> general</div>
               <div class="channel"><i class="fa-solid fa-hashtag"></i> intel</div>
           </div>
-          
           <div class="user-panel">
               <div class="user-avatar-wrapper">
                   <img id="user-avatar" src="">
@@ -189,10 +194,12 @@
                   <i class="fa-solid fa-hashtag"></i>
                   <h3 id="channel-name">general</h3>
               </div>
+              <div class="header-right" style="margin-left:auto; color:#b9bbbe; cursor:pointer;">
+                  <i class="fa-solid fa-calculator" id="calc-btn"></i>
+              </div>
           </header>
 
-          <div class="messages-wrapper" id="messages-feed">
-              </div>
+          <div class="messages-wrapper" id="messages-feed"></div>
 
           <div class="chat-input-area">
               <div class="input-wrapper">
@@ -204,15 +211,10 @@
       </main>
   </div>
 
-  <div id="modal-backdrop" class="modal-backdrop hidden">
-      <div class="modal-box">
-          <h3>Create Channel</h3>
-          <input type="text" id="new-room-name" placeholder="Channel Name">
-          <div class="modal-footer">
-              <button class="back-btn" onclick="document.getElementById('modal-backdrop').classList.add('hidden')">Cancel</button>
-              <button class="primary-btn" id="create-room-btn">Create</button>
-          </div>
-      </div>
+  <div id="calculator-overlay" class="hidden">
+      <div class="calc-top-bar" id="exit-calc"></div>
+      <div class="calc-screen">0</div>
+      <div class="calc-buttons"></div>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
