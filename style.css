@@ -2639,32 +2639,3 @@ html.total-breach .header-batch:before {
   0% { text-shadow: 0 0 5px var(--bioluminescent-teal); }
   100% { text-shadow: 0 0 15px var(--bioluminescent-teal); }
 }
-.google-btn {
-  width: 100%;
-  padding: 0.75rem 1.5rem;
-  background: rgba(255, 255, 255, 0.05); /* Çok hafif beyaz transparan */
-  border: 1px solid var(--misty-gray);
-  color: #fff;
-  font-family: var(--font-heading);
-  font-size: 0.9rem;
-  letter-spacing: 1px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  transition: all 0.3s ease;
-  margin-top: 10px;
-}
-
-.google-btn:hover {
-  background: rgba(57, 240, 217, 0.1); /* Teal renginde hafif parlama */
-  border-color: var(--bioluminescent-teal);
-  color: var(--bioluminescent-teal);
-  box-shadow: 0 0 15px rgba(57, 240, 217, 0.2);
-  transform: translateY(-2px);
-}
-
-.google-btn i {
-  font-size: 1.1em;
-}
