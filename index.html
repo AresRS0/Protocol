@@ -3,206 +3,268 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PROTOCOL | UI Design</title>
-  
+  <title>Cryptid Collective | Field Researcher Authentication</title>
+  <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Space+Mono&family=Work+Sans:wght@400;500&display=swap" rel="stylesheet">
-  
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <div id="auth-layer">
-      <div class="background">
-        <div class="noise"></div>
-        <div class="gradient-overlay"></div>
-      </div>
-      <div class="topographic-overlay"></div>
-      
-      <div class="container">
-        <header>
-          <svg class="logo" viewBox="0 0 200 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="height: 40px;">
-             <text x="0" y="30" fill="#39F0D9" font-family="Rajdhani" font-weight="bold" font-size="28" letter-spacing="4">PROTOCOL</text>
-          </svg>
-          
-          <div class="coordinates">
-            <span id="coordinates">SECURE CONNECTION</span>
-            <span id="timestamp">ESTABLISHED</span>
-          </div>
-        </header>
-
-        <main class="glass-panel">
-          <div class="classified-stamp">TOP SECRET</div>
-          <div class="scanner-line"></div>
-          
-          <div class="form-container">
-            <h1 data-text="Identity Verification">Identity Verification</h1>
-            <div class="classified-stripe">ACCESS RESTRICTED</div>
-            
-            <form id="ui-login-form">
-              <div class="form-group">
-                <label>AGENT ID</label>
-                <div class="input-container">
-                  <span class="input-prefix">></span>
-                  <input type="email" placeholder="Identifier" autocomplete="off">
-                  <div class="input-glow"></div>
-                </div>
-              </div>
-              
-              <div class="form-group">
-                <label>PASSCODE</label>
-                <div class="input-container">
-                  <span class="input-prefix">#</span>
-                  <input type="password" placeholder="Access Code">
-                  <div class="input-glow"></div>
-                </div>
-              </div>
-              
-              <button type="button" class="google-auth-btn">
-                <i class="fa-brands fa-google"></i> UPLINK VIA GOOGLE
-              </button>
-
-              <button type="button" class="btn-primary" id="ui-switch-btn">
-                AUTHENTICATE
-                <div class="btn-glow"></div>
-              </button>
-              
-              <div class="form-footer">
-                <p>No clearance? <a href="#" class="accent-link">Request Access</a></p>
-              </div>
-            </form>
-          </div>
-        </main>
-      </div>
-  </div> 
-
-  <div id="app-layer" class="hidden">
-      
-      <nav class="guilds-nav">
-          <div class="guild-icon active"><i class="fa-solid fa-shield-halved"></i></div>
-          <div class="guild-separator"></div>
-          
-          <div class="guild-icon">OP</div>
-          <div class="guild-icon">IN</div>
-          <div class="guild-icon">X9</div>
-          
-          <div class="guild-icon add-guild-btn"><i class="fa-solid fa-plus"></i></div>
-      </nav>
-
-      <aside class="sidebar">
-          <header class="server-header">
-              <h3>Protocol V3</h3>
-              <i class="fa-solid fa-chevron-down"></i>
-          </header>
-          
-          <div class="channels-scroller">
-              <div class="category-name"><i class="fa-solid fa-angle-down"></i> OPERATIONS</div>
-              <div class="channel active"><i class="fa-solid fa-hashtag"></i> mission-brief</div>
-              <div class="channel"><i class="fa-solid fa-hashtag"></i> intel-feed</div>
-              <div class="channel"><i class="fa-solid fa-lock"></i> classified-docs</div>
-              
-              <div class="category-name" style="margin-top:20px;"><i class="fa-solid fa-angle-down"></i> VOICE UPLINK</div>
-              <div class="channel"><i class="fa-solid fa-volume-high"></i> Secure Line 1</div>
-          </div>
-          
-          <div class="user-panel">
-              <div class="user-avatar-wrapper">
-                  <img src="https://cdn.discordapp.com/embed/avatars/0.png" alt="User">
-                  <div class="status-indicator online"></div>
-              </div>
-              <div class="user-name-tag">
-                  <div class="username">Agent 47</div>
-                  <div class="discriminator">#8080</div>
-              </div>
-              <div class="user-actions">
-                  <i class="fa-solid fa-microphone"></i>
-                  <i class="fa-solid fa-headphones"></i>
-                  <i class="fa-solid fa-gear"></i>
-              </div>
-          </div>
-      </aside>
-
-      <main class="chat-area">
-          <header class="chat-header">
-              <div class="header-left">
-                  <i class="fa-solid fa-hashtag"></i>
-                  <h3>mission-brief</h3>
-                  <span class="topic">Secure communication channel active.</span>
-              </div>
-              <div class="header-right">
-                  <i class="fa-solid fa-phone"></i>
-                  <i class="fa-solid fa-video"></i>
-                  <i class="fa-solid fa-thumbtack"></i>
-                  <i class="fa-solid fa-users"></i>
-                  <div class="search-bar">Search</div>
-              </div>
-          </header>
-
-          <div class="messages-wrapper">
-              
-              <div class="message">
-                  <img class="msg-avatar" src="https://cdn.discordapp.com/embed/avatars/1.png">
-                  <div class="msg-content">
-                      <h4>Commander <span class="msg-timestamp">Today at 14:02</span></h4>
-                      <div class="msg-text">Operation Protocol V3 is strictly UI focused. No backend logic required at this stage. Confirm visual integrity.</div>
-                  </div>
-              </div>
-
-              <div class="message">
-                  <img class="msg-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png">
-                  <div class="msg-content">
-                      <h4>Agent 47 <span class="msg-timestamp">Today at 14:05</span></h4>
-                      <div class="msg-text">Visuals confirmed. Interfaces match the specifications.</div>
-                      <div class="msg-attachment" style="width: 200px; height: 120px; background: #2f3136; margin-top:5px; border-radius:5px; display:flex; align-items:center; justify-content:center; color:#72767d; font-size:12px;">
-                          [ENCRYPTED IMAGE]
-                      </div>
-                  </div>
-              </div>
-
-          </div>
-
-          <div class="chat-input-area">
-              <div class="input-wrapper">
-                  <button class="attach-btn"><i class="fa-solid fa-circle-plus"></i></button>
-                  <input type="text" placeholder="Message #mission-brief">
-                  <div class="input-icons">
-                      <i class="fa-solid fa-gift"></i>
-                      <i class="fa-solid fa-sticky-note"></i>
-                      <i class="fa-solid fa-face-smile"></i>
-                  </div>
-              </div>
-          </div>
-      </main>
-      
-      <aside class="members-sidebar">
-          <div class="members-category">ONLINE — 2</div>
-          <div class="member">
-              <div class="member-avatar">
-                  <img src="https://cdn.discordapp.com/embed/avatars/1.png">
-                  <div class="status-indicator online"></div>
-              </div>
-              <div class="member-info">
-                  <div class="member-name" style="color:#e74c3c">Commander</div>
-                  <div class="member-status">Watching...</div>
-              </div>
-          </div>
-          
-          <div class="member">
-              <div class="member-avatar">
-                  <img src="https://cdn.discordapp.com/embed/avatars/0.png">
-                  <div class="status-indicator idle"></div>
-              </div>
-              <div class="member-info">
-                  <div class="member-name">Agent 47</div>
-                  <div class="member-status">In mission</div>
-              </div>
-          </div>
-      </aside>
-
+  <div class="background">
+    <div class="noise"></div>
+    <div class="gradient-overlay"></div>
   </div>
+  
+  <div class="topographic-overlay"></div>
+  
+  <div class="container">
+    <header>
+      <img src="logo.svg" alt="Cryptid Collective" class="logo">
+      <div class="coordinates">
+        <span id="coordinates">47°10′N 52°44′W</span>
+        <span id="timestamp">2023-11-07 20:15:33 UTC</span>
+      </div>
+    </header>
 
+    <main class="glass-panel">
+      <div class="lockout-message">SECURITY PROTOCOL ACTIVATED<span>Please reload page to continue</span></div>
+      
+      <div class="classified-stamp">Level 3 Clearance</div>
+      <div class="morse-code">... . -.-. ..- .-. .. - -.--  .--. .-. --- - --- -.-. --- .-..</div>
+      <div class="hidden-cryptid"></div>
+      <div class="security-grid"></div>
+      <div class="binary-code">01010011 01000101 01000011 01010101 01010010 01000101</div>
+      <div class="scan-animation"></div>
+      
+      <div class="form-container" id="sign-in-container">
+        <h1 data-text="Field Researcher Authentication">Field Researcher Authentication</h1>
+        <div class="classified-stripe">
+          CLEARANCE REQUIRED
+        </div>
+        
+        <form id="sign-in-form">
+          <div class="form-group">
+            <label for="researcher-id">Researcher ID</label>
+            <div class="input-container">
+              <input type="email" id="researcher-id" required>
+              <div class="input-glow"></div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="clearance-code">Clearance Code</label>
+            <div class="input-container">
+              <input type="password" id="clearance-code" required>
+              <div class="input-glow"></div>
+            </div>
+          </div>
+          
+          <div class="form-group" style="margin-bottom: 10px;">
+            <button type="button" class="btn-secondary google-btn">
+                <i class="fab fa-google"></i> ACCESS VIA GOOGLE UPLINK
+            </button>
+          </div>
+          <div class="form-options">
+            <div class="custom-toggle-container" id="stealth-login-container">
+              <div class="custom-toggle" id="stealth-login-toggle"></div>
+              <input type="hidden" name="stealth-login" value="false">
+              <span>Enable Stealth Login</span>
+            </div>
+            <a href="#" class="accent-link">Access Code Recovery</a>
+          </div>
+          
+          <button type="submit" class="btn-primary" id="authenticate-btn">
+            AUTHENTICATE
+            <span class="btn-glow"></span>
+            <div class="security-indicators">
+              <div class="indicator"></div>
+              <div class="indicator"></div>
+              <div class="indicator"></div>
+            </div>
+          </button>
+          
+          <div class="biometric-scanner mobile-only">
+            </div>
+          
+          <div class="form-footer">
+            <p>No field credentials? <a href="#" id="show-register" class="accent-link">Request Access</a></p>
+          </div>
+        </form>
+      </div>
+      
+      <div class="form-container hidden" id="register-container">
+        <h1 data-text="Field Researcher Onboarding">Field Researcher Onboarding</h1>
+        <div class="classified-stripe">NEW PERSONNEL REGISTRATION</div>
+        
+        <form id="register-form">
+          <div class="form-group">
+            <label for="new-researcher-name">Operative Name</label>
+            <div class="input-container">
+              <span class="input-prefix">&gt;</span>
+              <input type="text" id="new-researcher-name" placeholder="SURNAME, Given Names" required>
+              <div class="input-glow"></div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="new-researcher-id">Field Contact</label>
+            <div class="input-container">
+              <span class="input-prefix">#</span>
+              <input type="email" id="new-researcher-id" placeholder="secure email required" required>
+              <div class="input-glow"></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="clearance-code-new">Create Clearance Code</label>
+            <div class="input-container">
+              <span class="input-prefix secure">#</span>
+              <input type="password" 
+                     id="clearance-code-new" 
+                     placeholder="MIN 8 CHARS, CAPS & NUMBERS"
+                     required>
+              <div class="input-glow"></div>
+            </div>
+          </div>
+
+          <div class="protocol-acceptance">
+            <div class="custom-toggle-container" id="protocol-checkbox-container">
+              <div class="custom-toggle" id="protocol-checkbox-toggle"></div>
+              <input type="hidden" name="protocol-accepted" value="false">
+              <span>I acknowledge the <span class="accent-text">Cryptid Collective Field Protocol</span> and accept the risks of paranormal research</span>
+            </div>
+          </div>
+          
+          <button type="submit" class="btn-primary">
+            <span class="btn-text">INITIALIZE CLEARANCE</span>
+            <span class="btn-glow"></span>
+          </button>
+          
+          <div class="form-footer">
+            <p>Already have access? <a href="#" id="show-login" class="accent-link">AUTHENTICATE</a></p>
+          </div>
+        </form>
+      </div>
+    </main>
+    
+    <footer>
+      <p class="disclaimer">CRYPTID COLLECTIVE · CONFIDENTIAL · FOR APPROVED RESEARCHERS ONLY</p>
+    </footer>
+  </div>
+  
+  <div class="thermal-cursor"></div>
+  
+  <div class="aptitude-test-container hidden">
+    <div class="glass-panel aptitude-panel">
+      <div class="classified-stamp">RESEARCHER EVALUATION</div>
+      <div class="test-header">
+        <h2>FIELD APTITUDE EVALUATION</h2>
+        <div class="classified-stripe">CLEARANCE VERIFICATION IN PROGRESS</div>
+      </div>
+      
+      <div class="test-progress">
+        <div class="progress-bar">
+          <div class="progress-fill"></div>
+        </div>
+        <div class="progress-label">TEST 1/3</div>
+      </div>
+      
+      <div class="test-section active" data-test="1">
+        <h3>CRYPTID PATTERN RECOGNITION</h3>
+        <p class="test-instruction">Identify the next symbol in the sequence to verify cognitive mapping skills.</p>
+        
+        <div class="pattern-sequence">
+          <div class="pattern-item">≈</div>
+          <div class="pattern-item">≋</div>
+          <div class="pattern-item">≈≈</div>
+          <div class="pattern-item">≋≋</div>
+          <div class="pattern-item pattern-question">?</div>
+        </div>
+        
+        <div class="pattern-options">
+          <div class="pattern-option" data-value="≈≈≈">≈≈≈</div>
+          <div class="pattern-option" data-value="≋≋≋">≋≋≋</div>
+          <div class="pattern-option correct" data-value="≈≈≋">≈≈≋</div>
+          <div class="pattern-option" data-value="≋≈≋">≋≈≋</div>
+        </div>
+      </div>
+      
+      <div class="test-section" data-test="2">
+        <h3>CRYPTID SIGHTING MEMORY</h3>
+        <p class="test-instruction">Memorize the locations shown. The map will clear in <span class="countdown">5</span> seconds.</p>
+        
+        <div class="memory-map">
+          <div class="map-grid">
+            <div class="map-marker" data-location="A3"></div>
+            <div class="map-marker" data-location="C1"></div>
+            <div class="map-marker" data-location="D4"></div>
+          </div>
+          <div class="map-overlay"></div>
+        </div>
+        
+        <div class="memory-recall hidden">
+          <p>Select all locations where sightings occurred:</p>
+          <div class="recall-grid">
+            <div class="recall-cell" data-location="A1"></div>
+            <div class="recall-cell" data-location="A2"></div>
+            <div class="recall-cell" data-location="A3"></div>
+            <div class="recall-cell" data-location="A4"></div>
+            <div class="recall-cell" data-location="B1"></div>
+            <div class="recall-cell" data-location="B2"></div>
+            <div class="recall-cell" data-location="B3"></div>
+            <div class="recall-cell" data-location="B4"></div>
+            <div class="recall-cell" data-location="C1"></div>
+            <div class="recall-cell" data-location="C2"></div>
+            <div class="recall-cell" data-location="C3"></div>
+            <div class="recall-cell" data-location="C4"></div>
+            <div class="recall-cell" data-location="D1"></div>
+            <div class="recall-cell" data-location="D2"></div>
+            <div class="recall-cell" data-location="D3"></div>
+            <div class="recall-cell" data-location="D4"></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="test-section" data-test="3">
+        <h3>FIELD REACTION ASSESSMENT</h3>
+        <p class="test-instruction">Capture the cryptid silhouettes by clicking on them before they disappear. Minimum 4 captures required.</p>
+        
+        <div class="reaction-arena">
+          <div class="capture-counter">CAPTURES: <span>0</span>/4</div>
+        </div>
+      </div>
+      
+      <div class="test-section results-section" data-test="results">
+        <h3>FIELD RESEARCHER INITIALIZATION</h3>
+        <div class="results-panel">
+          <div class="scanner-line"></div>
+          <div class="result-icon">✓</div>
+          <h4>APTITUDE VERIFIED</h4>
+          <p>Your field researcher profile has been initialized.</p>
+          <div class="security-clearance">
+            <span class="clearance-label">CLEARANCE LEVEL:</span>
+            <span class="clearance-value">2</span>
+          </div>
+          <div class="scan-effect"></div>
+        </div>
+        
+        <div class="completion-message">
+          <p>Your credentials have been established.</p>
+          <p>Returning to authentication interface...</p>
+        </div>
+      </div>
+      
+      <div class="test-navigation">
+        <button type="button" class="btn-primary test-continue">
+          <span class="btn-text">BEGIN ASSESSMENT</span>
+          <span class="btn-glow"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+  
   <script src="script.js"></script>
 </body>
 </html>
