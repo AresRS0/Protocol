@@ -2591,3 +2591,104 @@ function createFallbackLogoSvg() {
       console.log("Error checking for logo.svg, using fallback");
     });
 }
+// =================================================================
+// SYSTEM ADDON: GOOGLE UPLINK MODULE
+// =================================================================
+
+// 1. Firebase Configuration (Protocol V3)
+const firebaseConfig = {
+    apiKey: "AIzaSyAQxv2-4XG4K0kVm5ITFcbDkpxqts4yAz4",
+    authDomain: "protocol-e7e7c.firebaseapp.com",
+    projectId: "protocol-e7e7c",
+    storageBucket: "protocol-e7e7c.firebasestorage.app",
+    messagingSenderId: "594400924109",
+    appId: "1:594400924109:web:23ae7037855c7fcd2eb484",
+    measurementId: "G-Y8BRBYLQJM"
+};
+
+// 2. Initialize Firebase (Safe Check)
+if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+    console.log("SYSTEM: Secure Connection Established via Firebase.");
+} else if (typeof firebase === 'undefined') {
+    console.error("CRITICAL ERROR: Firebase SDK not detected.");
+}
+
+const auth = firebase ? firebase.auth() : null;
+const db = firebase ? firebase.firestore() : null;
+
+// 3. Button Action Logic
+document.addEventListener('DOMContentLoaded', () => {
+    const googleBtn = document.getElementById('google-login-btn');
+
+    if (googleBtn && auth) {
+        googleBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            // UI Feedback: Butonu "Processing" moduna al
+            const originalText = googleBtn.innerHTML;
+            googleBtn.innerHTML = '<i class="fas fa-satellite-dish fa-spin"></i> ESTABLISHING UPLINK...';
+            googleBtn.style.opacity = "0.8";
+            
+            // Ses efekti varsa çal (Senin kodundaki mevcut fonksiyonu kullanıyoruz)
+            if(typeof playCapturePing === 'function') playCapturePing();
+
+            try {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                const result = await auth.signInWithPopup(provider);
+                const user = result.user;
+
+                // BAŞARILI GİRİŞ
+                console.log("ACCESS GRANTED:", user.email);
+                
+                // Başarı ses efekti
+                if(typeof playSuccessSound === 'function') playSuccessSound();
+
+                // UI Bildirimi (Senin kodundaki fonksiyon)
+                if(typeof showNotification === 'function') {
+                    showNotification('IDENTITY VERIFIED: ' + user.displayName.toUpperCase(), 'success');
+                } else {
+                    alert("WELCOME AGENT: " + user.displayName);
+                }
+
+                // Kullanıcıyı veritabanına kaydet (Opsiyonel ama önerilir)
+                if(db) {
+                    db.collection('users').doc(user.uid).set({
+                        username: user.displayName,
+                        email: user.email,
+                        lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
+                        clearanceLevel: 1 // Varsayılan seviye
+                    }, { merge: true });
+                }
+
+                // Yönlendirme veya UI değişikliği (Şimdilik başarılı bildirimi yeterli)
+                // window.location.href = "dashboard.html"; 
+
+            } catch (error) {
+                // HATA DURUMU
+                console.error("UPLINK FAILED:", error);
+                
+                // Hata ses efekti
+                if(typeof playErrorSound === 'function') playErrorSound();
+
+                // UI Bildirimi
+                if(typeof showNotification === 'function') {
+                    showNotification('UPLINK ERROR: ' + error.message, 'error');
+                } else {
+                    alert("ERROR: " + error.message);
+                }
+
+                // Butonu eski haline getir
+                googleBtn.innerHTML = originalText;
+                googleBtn.style.opacity = "1";
+                
+                // Formu salla (Glitch efekti)
+                const panel = document.querySelector('.glass-panel');
+                if(panel) {
+                    panel.classList.add('shake');
+                    setTimeout(() => panel.classList.remove('shake'), 500);
+                }
+            }
+        });
+    }
+});
