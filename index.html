@@ -29,67 +29,49 @@
     </header>
 
     <main class="glass-panel">
-      <div class="lockout-message">GÜVENLİK PROTOKOLÜ AKTİF<span>Devam etmek için sayfayı yenileyin</span></div>
+      <div class="lockout-message">SECURITY PROTOCOL ACTIVATED<span>Please reload page to continue</span></div>
       
-      <div id="reset-password-panel" class="reset-password-panel hidden">
-        <h2 style="color:var(--bioluminescent-teal); margin-bottom:20px;">ŞİFRE YENİLEME</h2>
-        <p style="font-size:0.8rem; color:#aaa; text-align:center; margin-bottom:20px;">
-            Sisteme kayıtlı e-posta adresinizi girin. Size doğrulama bağlantısı göndereceğiz.
-        </p>
-        <div class="form-group" style="width:100%">
-            <div class="input-container">
-                <span class="input-prefix">@</span>
-                <input type="email" id="reset-email" placeholder="E-Posta Adresi">
-            </div>
-        </div>
-        <button type="button" class="btn-primary" id="send-reset-btn">DOĞRULAMA KODU GÖNDER</button>
-        <button type="button" class="btn-secondary" id="cancel-reset-btn" style="margin-top:10px;">İPTAL</button>
-      </div>
-
-      <div class="classified-stamp">SECURE CODE REQUIRED</div>
+      <div class="classified-stamp">Level 3 Clearance</div>
       <div class="morse-code">... . -.-. ..- .-. .. - -.--  .--. .-. --- - --- -.-. --- .-..</div>
       <div class="hidden-cryptid"></div>
       <div class="security-grid"></div>
+      <div class="binary-code">01010011 01000101 01000011 01010101 01010010 01000101</div>
       <div class="scan-animation"></div>
       
       <div class="form-container" id="sign-in-container">
-        <h1 data-text="Protokol Kullanıcı Girişi">Protokol Kullanıcı Girişi</h1>
-        <div class="classified-stripe">SECURE CODE REQUIRED</div>
+        <h1 data-text="Field Researcher Authentication">Field Researcher Authentication</h1>
+        <div class="classified-stripe">
+          CLEARANCE REQUIRED
+        </div>
         
         <form id="sign-in-form">
           <div class="form-group">
-            <label for="researcher-id">Protokol ID</label>
+            <label for="researcher-id">Researcher ID</label>
             <div class="input-container">
-              <input type="text" id="researcher-id" placeholder="Kullanıcı Adı & Mail Adresi" required>
+              <input type="email" id="researcher-id" required>
               <div class="input-glow"></div>
             </div>
           </div>
           
           <div class="form-group">
-            <label for="clearance-code">Secure Code</label>
+            <label for="clearance-code">Clearance Code</label>
             <div class="input-container">
               <input type="password" id="clearance-code" required>
               <div class="input-glow"></div>
             </div>
           </div>
           
-          <div class="form-group" style="margin-top: 15px; margin-bottom: 5px;">
-            <button type="button" class="btn-secondary google-uplink-btn" id="google-login-btn">
-              <i class="fab fa-google"></i> GOOGLE İLE GİRİŞ YAP
-            </button>
-          </div>
-
           <div class="form-options">
             <div class="custom-toggle-container" id="stealth-login-container">
               <div class="custom-toggle" id="stealth-login-toggle"></div>
               <input type="hidden" name="stealth-login" value="false">
-              <span>Giriş Bilgilerimi Hatırla</span>
+              <span>Enable Stealth Login</span>
             </div>
-            <a href="#" id="forgot-password-link" class="accent-link">Şifremi Unuttum</a>
+            <a href="#" class="accent-link">Access Code Recovery</a>
           </div>
           
           <button type="submit" class="btn-primary" id="authenticate-btn">
-            DOĞRULAMA
+            AUTHENTICATE
             <span class="btn-glow"></span>
             <div class="security-indicators">
               <div class="indicator"></div>
@@ -98,51 +80,46 @@
             </div>
           </button>
           
+          <div class="biometric-scanner mobile-only">
+            <!-- ...scanner code... -->
+          </div>
+          
           <div class="form-footer">
-            <p>Hesabın yok mu? <a href="#" id="show-register" class="accent-link">Hesap Oluştur</a></p>
+            <p>No field credentials? <a href="#" id="show-register" class="accent-link">Request Access</a></p>
           </div>
         </form>
       </div>
       
       <div class="form-container hidden" id="register-container">
-        <h1 data-text="Katılım İsteği Gönder">Katılım İsteği Gönder</h1>
-        <div class="classified-stripe">YENİ KULLANICI TALEBİ</div>
+        <h1 data-text="Field Researcher Onboarding">Field Researcher Onboarding</h1>
+        <div class="classified-stripe">NEW PERSONNEL REGISTRATION</div>
         
         <form id="register-form">
           <div class="form-group">
-            <label for="new-researcher-name">Kullanıcı Adı</label>
+            <label for="new-researcher-name">Operative Name</label>
             <div class="input-container">
               <span class="input-prefix">&gt;</span>
-              <input type="text" id="new-researcher-name" placeholder="Operative Name" required>
-              <div class="input-glow"></div>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="full-name">İsim Soyisim</label>
-            <div class="input-container">
-              <span class="input-prefix">&gt;</span>
-              <input type="text" id="full-name" placeholder="SURNAME, Given Names" required>
+              <input type="text" id="new-researcher-name" placeholder="SURNAME, Given Names" required>
               <div class="input-glow"></div>
             </div>
           </div>
           
           <div class="form-group">
-            <label for="new-researcher-id">İletişim Adresi</label>
+            <label for="new-researcher-id">Field Contact</label>
             <div class="input-container">
               <span class="input-prefix">#</span>
-              <input type="email" id="new-researcher-id" placeholder="Güvenlik Mail Adresi" required>
+              <input type="email" id="new-researcher-id" placeholder="secure email required" required>
               <div class="input-glow"></div>
             </div>
           </div>
 
           <div class="form-group">
-            <label for="clearance-code-new">Güvenlik Kodu Oluştur</label>
+            <label for="clearance-code-new">Create Clearance Code</label>
             <div class="input-container">
               <span class="input-prefix secure">#</span>
               <input type="password" 
                      id="clearance-code-new" 
-                     placeholder="Min 8 Karakter, Büyük Harf, Sayı & Simge"
+                     placeholder="MIN 8 CHARS, CAPS & NUMBERS"
                      required>
               <div class="input-glow"></div>
             </div>
@@ -152,17 +129,17 @@
             <div class="custom-toggle-container" id="protocol-checkbox-container">
               <div class="custom-toggle" id="protocol-checkbox-toggle"></div>
               <input type="hidden" name="protocol-accepted" value="false">
-              <span style="font-size: 0.7rem;">Tüm sözleşmeyi anlayarak okudum ve oluşabilecek tüm riskleri onaylıyorum. <a href="#" class="accent-link">[Sözleşme]</a></span>
+              <span>I acknowledge the <span class="accent-text">Cryptid Collective Field Protocol</span> and accept the risks of paranormal research</span>
             </div>
           </div>
           
           <button type="submit" class="btn-primary">
-            <span class="btn-text">KATILIM TALEBİ OLUŞTUR</span>
+            <span class="btn-text">INITIALIZE CLEARANCE</span>
             <span class="btn-glow"></span>
           </button>
           
           <div class="form-footer">
-            <p>Erişim İznin Var mı? <a href="#" id="show-login" class="accent-link">GİRİŞ YAP</a></p>
+            <p>Already have access? <a href="#" id="show-login" class="accent-link">AUTHENTICATE</a></p>
           </div>
         </form>
       </div>
@@ -290,24 +267,13 @@
   </div>
   
   <script>
-    // Debug helper to make sure aptitude tests can be triggered manually
-    window.debugStartTests = function() {
-      console.log('Manual test trigger');
-      if (typeof startAptitudeTests === 'function') {
-        startAptitudeTests();
-      } else {
-        console.error('startAptitudeTests function not found');
-      }
-    };
-
-    // Debug function to manually trigger aptitude tests
+    // Debug helper functions
     window.manuallyStartAptitudeTests = function() {
       console.log('Manual test trigger');
       if (typeof startAptitudeTests === 'function') {
         startAptitudeTests();
       } else {
         console.error('startAptitudeTests function not found');
-        alert('Error: Test system not available');
       }
     };
 
@@ -328,13 +294,10 @@
           console.log("Container manually activated");
         } else {
           console.error("Container not found");
-      }
+        }
+      } 
     };
   </script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-  <script src="form-elements.js"></script>
-  <script src="script.js"></script>
+  <script src="script.js"></script> 
 </body>
 </html>
