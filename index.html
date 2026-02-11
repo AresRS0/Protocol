@@ -23,7 +23,7 @@
     <header>
       <img src="logo.svg" alt="Cryptid Collective" class="logo">
       <div class="coordinates">
-        <span id="coordinates">47°10′N 52°44′W</span>
+        <span id="coordinates">SİSTEM ÇEVRİMİÇİ</span>
         <span id="timestamp">2023-11-07 20:15:33 UTC</span>
       </div>
     </header>
@@ -38,111 +38,90 @@
       <div class="binary-code">01010011 01000101 01000011 01010101 01010010 01000101</div>
       <div class="scan-animation"></div>
       
-      <div class="form-container" id="sign-in-container">
-        <h1 data-text="Field Researcher Authentication">Field Researcher Authentication</h1>
-        <div class="classified-stripe">
-          CLEARANCE REQUIRED
+      <div id="sign-in-container" class="form-container">
+      <h1>Protokol Kullanıcı Girişi</h1>
+      <p class="subtitle">YALNIZCA ONAYLANMIŞ KULLANICILAR</p>
+      
+      <form id="login-form">
+        <div class="input-group">
+          <label for="login-email">Kullanıcı Adı</label>
+          <input type="email" id="login-email" placeholder="Kullanıcı Adı Giriniz" required>
+          <div class="input-line"></div>
         </div>
         
-        <form id="sign-in-form">
-          <div class="form-group">
-            <label for="researcher-id">Researcher ID</label>
-            <div class="input-container">
-              <input type="email" id="researcher-id" required>
-              <div class="input-glow"></div>
-            </div>
-          </div>
-          
-          <div class="form-group">
-            <label for="clearance-code">Clearance Code</label>
-            <div class="input-container">
-              <input type="password" id="clearance-code" required>
-              <div class="input-glow"></div>
-            </div>
-          </div>
-          
-          <div class="form-options">
-            <div class="custom-toggle-container" id="stealth-login-container">
-              <div class="custom-toggle" id="stealth-login-toggle"></div>
-              <input type="hidden" name="stealth-login" value="false">
-              <span>Enable Stealth Login</span>
-            </div>
-            <a href="#" class="accent-link">Access Code Recovery</a>
-          </div>
-          
-          <button type="submit" class="btn-primary" id="authenticate-btn">
-            AUTHENTICATE
-            <span class="btn-glow"></span>
-            <div class="security-indicators">
-              <div class="indicator"></div>
-              <div class="indicator"></div>
-              <div class="indicator"></div>
-            </div>
-          </button>
-          
-          <div class="biometric-scanner mobile-only">
-            <!-- ...scanner code... -->
-          </div>
-          
-          <div class="form-footer">
-            <p>No field credentials? <a href="#" id="show-register" class="accent-link">Request Access</a></p>
-          </div>
-        </form>
-      </div>
-      
-      <div class="form-container hidden" id="register-container">
-        <h1 data-text="Field Researcher Onboarding">Field Researcher Onboarding</h1>
-        <div class="classified-stripe">NEW PERSONNEL REGISTRATION</div>
+        <div class="input-group">
+          <label for="login-password">Protokol Şifresi</label>
+          <input type="password" id="login-password" placeholder="••••••••" required>
+          <div class="input-line"></div>
+        </div>
         
-        <form id="register-form">
-          <div class="form-group">
-            <label for="new-researcher-name">Operative Name</label>
-            <div class="input-container">
-              <span class="input-prefix">&gt;</span>
-              <input type="text" id="new-researcher-name" placeholder="SURNAME, Given Names" required>
-              <div class="input-glow"></div>
-            </div>
+        <div class="form-options" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; font-size: 0.8rem;">
+          <div class="checkbox-wrapper">
+            <input type="checkbox" id="stealth-mode">
+            <label for="stealth-mode" style="color: var(--misty-gray);">Hayalet Girişi Etkinleştir</label>
           </div>
-          
-          <div class="form-group">
-            <label for="new-researcher-id">Field Contact</label>
-            <div class="input-container">
-              <span class="input-prefix">#</span>
-              <input type="email" id="new-researcher-id" placeholder="secure email required" required>
-              <div class="input-glow"></div>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="clearance-code-new">Create Clearance Code</label>
-            <div class="input-container">
-              <span class="input-prefix secure">#</span>
-              <input type="password" 
-                     id="clearance-code-new" 
-                     placeholder="MIN 8 CHARS, CAPS & NUMBERS"
-                     required>
-              <div class="input-glow"></div>
-            </div>
-          </div>
-
-          <div class="protocol-acceptance">
-            <div class="custom-toggle-container" id="protocol-checkbox-container">
-              <div class="custom-toggle" id="protocol-checkbox-toggle"></div>
-              <input type="hidden" name="protocol-accepted" value="false">
-              <span>I acknowledge the <span class="accent-text">Cryptid Collective Field Protocol</span> and accept the risks of paranormal research</span>
-            </div>
-          </div>
-          
-          <button type="submit" class="btn-primary">
-            <span class="btn-text">INITIALIZE CLEARANCE</span>
-            <span class="btn-glow"></span>
-          </button>
-          
-          <div class="form-footer">
-            <p>Already have access? <a href="#" id="show-login" class="accent-link">AUTHENTICATE</a></p>
-          </div>
-        </form>
+          <a href="#" style="color: var(--bioluminescent-teal); text-decoration: none;">Şifremi Unuttum</a>
+        </div>
+        
+        <button type="submit" class="primary-btn" id="btn-login">
+          <span class="btn-text">GİRİŞ YAP</span>
+          <div class="scan-effect"></div>
+        </button>
+      </form>
+      
+      <div class="alt-action">
+        <p>Hesabın Yok mu? <a href="#" id="show-register">Hesap Oluştur</a></p>
       </div>
+    </div>
+      
+      <div id="register-container" class="form-container hidden">
+      <h1>Protokol Kullanıcı Oluşturma</h1>
+      <p class="subtitle">YÖNETİCİ ONAYI GEREKLİDİR</p>
+      
+      <form id="register-form">
+        <div id="step-1">
+          <div class="input-group">
+            <label for="reg-username">Protokol Adı</label>
+            <div class="input-wrapper">
+              <input type="text" id="reg-username" placeholder="İsim, SOYİSİM" required>
+              <div class="input-line"></div>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="reg-email">İletişim Adresi</label>
+            <div class="input-wrapper">
+              <input type="email" id="reg-email" placeholder="Mail Adresi Girmeniz Gerekmektedir" required>
+              <div class="input-line"></div>
+            </div>
+          </div>
+          
+          <div class="input-group">
+            <label for="reg-password">Protokol Şifresi Oluştur</label>
+            <div class="input-wrapper">
+              <input type="password" id="reg-password" placeholder="HARF, SAYI VE İŞARET KULLANIN" required>
+              <div class="input-line"></div>
+            </div>
+          </div>
+
+          <div class="checkbox-wrapper legal-check" style="margin-top: 1.5rem; margin-bottom: 1.5rem;">
+            <input type="checkbox" id="protocol-agree" required>
+            <label for="protocol-agree" style="font-size: 0.75rem; line-height: 1.4; color: var(--misty-gray);">
+              Tüm riskleri göz önünde bulundurarak sözleşmeyi ve Protokol uygulamasının sunduğu tüm şartları kabul ediyorum.
+            </label>
+          </div>
+
+          <button type="submit" class="primary-btn" id="btn-register">
+            <span class="btn-text">YÖNETİCİ ONAYI İSTE</span>
+            <div class="scan-effect"></div>
+          </button>
+        </div>
+      </form>
+      
+      <div class="alt-action">
+        <p>Onaylı Hesabın Var mı? <a href="#" id="show-login">GİRİŞ YAP</a></p>
+      </div>
+    </div>
     </main>
     
     <footer>
